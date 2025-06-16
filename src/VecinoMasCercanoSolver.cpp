@@ -1,7 +1,7 @@
 #include "VecinoMasCercanoSolver.h"
 #include <algorithm>
 #include <unordered_map>
-#include <iostream>
+#includgit e <iostream>
 #include <string>
 #include <vector>
 
@@ -39,76 +39,46 @@ vector<Route> vecinoMasCercano(const VRPLIBReader& instancia) {
     int capacidad = instancia.getCapacity();
     int n = instancia.getDimension();
 
-    std::unordered_map<int, Route> rutaCliente;
-    for (int i = 0; i <= n; i++) {
-        if (i != depot) {
-            rutaCliente[i] = Route{{depot, i, depot}, demandas[i]}; // seteamos las rutas iniciales
-        }
-    } // ESTA PARTE NO VA
+    // solucion con las rutas
+    vector<Route> rutas;
 
     // construimos una matriz de clientes ordenados por distancia, para cada cliente 
     vector<vector<int>> clientesOrdenadosPorDistancia = ordenarPorDistancias(distancias);
-    vector<int> clientesNoVisitados = {};
-    for (int i = 1; i <= n; i++) {
-        if (i != depot) {
-            clientesNoVisitados.push_back(i); 
-            // inicializo los clientes no visitados como todos los clientes menos el depot
-        }
-    } 
 
-    while (clientesNoVisitados.size() > 0) {
+    // para saber cuando todos los clientes tienen una ruta
+    int clientesNoVisitados = n - 1; // sin contar el deposito
+    vector<int> visitados (n+1, 0);
+    visitados[depot] = 1; // no queremos considerar el depot, solo clientes
+
+    // empiezo del depot, veo el nodo con min distancia y agregarlo a la ruta
+    while (clientesNoVisitados > 0) {
         Route rutaActual;
         rutaActual.nodes.push_back(depot);
         rutaActual.totalDemand = 0;
         int actual = depot;
         int capacidadRestante = capacidad;
 
-        while ()
-    }
-    
-}
-    
-    // empiezo del depot, veo el nodo con min distancia y agregarlo a la ruta
-    
-    // ahora me paro en el ultimo que agregue. busco el nodo con min distancia a este nodo, 
-    // si veo que al agregarlo no me paso de la capacidad, lo agrego. sino paso al prox min
+        // me dice si encuentra clientes que se pueden agregar a la ruta
+        bool puedeAgregar = true;
 
-    nodo_ordenados [i][0]
-    vector<int> clientes_visitados;
-    for (int r = 0; r <= n; r++) {
-        
-    }
-
-
-
-    for (int s = 0; s < savings.size(); s++) { // recorre los savings desde el mayor al menor
-        int i = savings[s].i;
-        int j = savings[j].j;
-
-        if (rutaCliente.find(i) != rutaCliente.end() 
-            && rutaCliente.find(j) != rutaCliente.end()) { 
-            // si no se encuentran en el mapa, ya están mapeados en otra ruta distinta
-            Route ruta_i = rutaCliente[i];
-            Route ruta_j = rutaCliente[j];
-
-            // chequeo de solapamiento
-            if (ruta_i.nodes[ruta_i.nodes.size() - 2] == i // si el cliente i es el último a visitar en la ruta_i le puedo seguir agregando rutas
-                && ruta_j.nodes[1] == 1) { // si j es el primer cliente que se visita en esta ruta se puede agregar la ruta_j a la ruta_i
-                int demandaAgregada = ruta_i.totalDemand + ruta_j.totalDemand;
-                if (demandaAgregada <= capacidad) { // si la nueva demanda no supera la capacidad agregamos ruta_j a ruta_i
-                    ruta_i.totalDemand = demandaAgregada;
-                    ruta_i.nodes.pop_back();
-                    ruta_i.nodes.insert(ruta_i.nodes.end(), ruta_j.nodes.begin() + 1, ruta_j.nodes.end());
-                    rutaCliente.erase(j); // eliminamos ruta_j del mapa cuando ya es parte de ruta_i
+        while (puedeAgregar != false) {
+            bool puedeAgregar = false; // si se encuentra un cliente se puede seguir buscando mas, sino la ruta esta hecha
+            for (int i = 1; i < n; ++i) {  // empiezo desde 1 (salteando columna 0 que no usamos)
+                int candidato = clientesOrdenadosPorDistancia[actual][i];
+                if (!visitados[candidato] && demandas[candidato] <= capacidadRestante) { // si es posible agrego el cliente a la ruta
+                    rutaActual.nodes.push_back(candidato);
+                    rutaActual.totalDemand += demandas[candidato];
+                    capacidadRestante -= demandas[candidato];
+                    visitados[candidato] = 1;
+                    actual = candidato;
+                    clientesNoVisitados--;
+                    puedeAgregar = true;
+                    break;  // solo agregamos un cliente por iteración
                 }
             }
         }
+        rutaActual.nodes.push_back(depot); // cerrar ruta
+        rutas.push_back(rutaActual); // agrego ruta a la solucion
     }
-    
-    vector<Route> solucion = {};
-    for (auto it = rutaCliente.begin(); it != rutaCliente.end(); ++it) {
-        solucion.push_back(it->second);
-    }
-
-    return solucion;
+    return rutas;
 }
