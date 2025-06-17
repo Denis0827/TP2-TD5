@@ -1,11 +1,18 @@
 #include <iostream>
 #include "VRPLIBReader.h"
+#include "ClarkeWrightSolver.h"
+#include <iomanip>
+
+void testClarkeWright(const std::string& instanciaPath);  // Avisás que existe
+
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <path_to_vrp_file>" << std::endl;
         return 1;
     }
+   
+    testClarkeWright(argv[1]);
 
     VRPLIBReader reader(argv[1]);
 
