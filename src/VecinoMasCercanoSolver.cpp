@@ -1,7 +1,7 @@
 #include "VecinoMasCercanoSolver.h"
 #include <algorithm>
 #include <unordered_map>
-#includgit e <iostream>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -47,7 +47,7 @@ vector<Route> vecinoMasCercano(const VRPLIBReader& instancia) {
 
     // para saber cuando todos los clientes tienen una ruta
     int clientesNoVisitados = n - 1; // sin contar el deposito
-    vector<int> visitados (n+1, 0);
+    vector<int> visitados (n + 1, 0);
     visitados[depot] = 1; // no queremos considerar el depot, solo clientes
 
     // empiezo del depot, veo el nodo con min distancia y agregarlo a la ruta
