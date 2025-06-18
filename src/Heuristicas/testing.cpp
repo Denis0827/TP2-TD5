@@ -7,6 +7,7 @@ void imprimirSolucion(const vector<Route>& solucion) {
         return;
     }
     int id = 1;
+    double distanciaTotalGlobal = 0.0;
     for (const auto& ruta: solucion) {
         cout << "Ruta " << id++ << ": ";
         NodoCliente* actual = ruta.raiz;
@@ -17,7 +18,9 @@ void imprimirSolucion(const vector<Route>& solucion) {
         cout << "| Demanda total: " << ruta.demandaTotal
              << " | Capacidad restante: " << ruta.capacidadRestante
              << " | Distancia total: " << ruta.distanciaTotal << endl;
+        distanciaTotalGlobal += ruta.distanciaTotal;
     }
+    cout << "Distancia total sumada de todas las rutas: " << distanciaTotalGlobal << endl;
 }
 
 
