@@ -57,7 +57,7 @@ vector<Route> Heuristicas::clarkeWright() {
     int n = this->_instancia.getDimension();
     int k = this->_instancia.getNumVehicles();
 
-    unordered_map<int, tuple<Route, NodoCliente*>> rutaCliente; 
+    unordered_map<int, tuple<Route, NodoCliente**>> rutaCliente; 
     // cada cliente tiene su ruta al principio, junto con un valor con su id dentro de la tupla
     // mientras se actualiza el mapa, si el cliente está ahora en otra ruta, la ruta se vacía,
     // y el valor de id de la tupla se actualiza al id del cliente cuya ruta tiene incluido ese cliente
@@ -76,7 +76,7 @@ vector<Route> Heuristicas::clarkeWright() {
 
             double distancia_total = distancias[depot][i] * 2;
             Route ruta = Route{raiz, ultimo, demandas[i], capacidad - demandas[i], distancia_total};
-            rutaCliente[i] = make_tuple(ruta, raiz);
+            rutaCliente[i] = make_tuple(ruta, &raiz);
         }
     }
 
@@ -99,8 +99,6 @@ vector<Route> Heuristicas::clarkeWright() {
         if ((get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id])).ultimo->anterior->id == i && get<1>(rutaCliente[j])->siguiente->id == j) {
             combinar = true;
 
-            cout << (get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id])).ultimo->anterior->anterior->id << endl;
-            cout << (get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id])).ultimo->anterior->id << endl;
             ruta_i = get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id]);
             ruta_j = get<0>(rutaCliente[j]);
         } else {
@@ -145,11 +143,11 @@ vector<Route> Heuristicas::clarkeWright() {
                 if (padre_i->siguiente->id == i) {
                     rutaCliente[i] = make_tuple(ruta_i, padre_i);
                 } else {
+                    rutaCliente[i] = make_tuple(Route(), padre_i);
                     rutaCliente[padre_i->siguiente->id] = make_tuple(ruta_i, padre_i);
                 }
 
-                
-                rutaCliente[j] = make_tuple(Route(), padre_i);
+                rutaCliente[j] = make_tuple(Route(), ruta_i.raiz);
 
                 imprimirRutasMapa(rutaCliente);
                 cout << "=====" << endl;
