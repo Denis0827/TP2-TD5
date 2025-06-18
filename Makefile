@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -I./src/Modelado_Clase -I./src/Heuristicas
+CXXFLAGS = -g -std=c++17 -Wall -Wextra -I./src/Modelado_Clase -I./src/Heuristicas
 
 SRC = src/Heuristicas/testing.cpp \
       src/Heuristicas/InicializarHeuristicas.cpp \

@@ -24,11 +24,11 @@ void imprimirSolucion(const vector<Route>& solucion) {
 }
 
 
-void imprimirSavings(const std::vector<Saving>& savings) {
-    for (const auto& s : savings) {
-        std::cout << "i: " << s.i << ", j: " << s.j << ", saving: " << s.saving << std::endl;
-    }
-}
+//void imprimirSavings(const std::vector<Saving>& savings) {
+//    for (const auto& s : savings) {
+//        std::cout << "i: " << s.i << ", j: " << s.j << ", saving: " << s.saving << std::endl;
+//    }
+//}
 
 void imprimirNodos(const std::vector<Node>& nodos) {
     for (const auto& nodo : nodos) {
@@ -57,9 +57,28 @@ void imprimirMatriz(const vector<vector<int>>& matriz) {
     }
 }
 
+double recalcularDistanciaTotal(NodoCliente* raiz, const vector<vector<double>>& distancias) {
+    double total = 0.0;
+    NodoCliente* actual = raiz;
+    while (actual->siguiente != nullptr) {
+        total += distancias[actual->id][actual->siguiente->id];
+        actual = actual->siguiente;
+    }
+    return total;
+}
+
+double recalcularDistanciaTotalSolucion(const vector<Route>& solucion, const vector<vector<double>>& distancias) {
+    double total = 0.0;
+    for (const auto& ruta : solucion) {
+        total += recalcularDistanciaTotal(ruta.raiz, distancias);
+    }
+    return total;
+}
+
+
 
 int main() {
-    Heuristicas heuristicas("instancias/2l-cvrp-0/E045-04f.dat");
+    Heuristicas heuristicas("instancias/2l-cvrp-0/E016-03m.dat");
     int depotId = heuristicas.getInstancia().getDepotId();
     vector<vector<double>> distancias = heuristicas.getInstancia().getDistanceMatrix();
     vector<Node> clientes = heuristicas.getInstancia().getNodes();
@@ -69,12 +88,16 @@ int main() {
     vector<Route> solucion = heuristicas.clarkeWright();
     vector<Route> solucion2 = heuristicas.vecinoMasCercano();
 
+    double distancia_real = recalcularDistanciaTotalSolucion(solucion, distancias);
+
     //vector<vector<int>> matriz = ordenarPorDistancias(distancias);
 
     //imprimirMatriz(matriz);
     imprimirSolucion(solucion); // Imprime la solución
     cout << "==========" << endl;
     imprimirSolucion(solucion2);
+    cout << "==========" << endl;
+    cout << distancia_real << endl;
 
     return 0;
 }
