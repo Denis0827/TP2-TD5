@@ -28,12 +28,17 @@ void imprimirSavings(const std::vector<Saving>& savings) {
     }
 }
 
-auto imprimirRutasMapa = [](const unordered_map<int, tuple<Route, NodoCliente*>>& rutas) {
+auto imprimirRutasMapa = [](const unordered_map<int, tuple<Route, NodoCliente**>>& rutas) {
     std::cout << "Estado actual de las rutas en el mapa:" << std::endl;
     for (const auto& par : rutas) {
         std::cout << "Cliente clave: " << par.first
-                  //<< " | Padre: " << get<1>(par.second)->siguiente->id
-                  << " | Ruta: ";
+                  << " | Padre: ";
+        if (get<1>(par.second) && *get<1>(par.second)) {
+            std::cout << (*get<1>(par.second))->id;
+        } else {
+            std::cout << "-";
+        }
+        std::cout << " | Ruta: ";
         NodoCliente* actual = get<0>(par.second).raiz;
         while (actual != nullptr) {
             std::cout << actual->id;
@@ -76,7 +81,7 @@ vector<Route> Heuristicas::clarkeWright() {
 
             double distancia_total = distancias[depot][i] * 2;
             Route ruta = Route{raiz, ultimo, demandas[i], capacidad - demandas[i], distancia_total};
-            rutaCliente[i] = make_tuple(ruta, &raiz);
+            rutaCliente[i] = make_tuple(ruta, &get<0>(rutaCliente[i]).raiz);
         }
     }
 
@@ -96,10 +101,10 @@ vector<Route> Heuristicas::clarkeWright() {
         Route ruta_j;
 
         // chequeo solapamiento
-        if ((get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id])).ultimo->anterior->id == i && get<1>(rutaCliente[j])->siguiente->id == j) {
+        if ((get<0>(rutaCliente[(*get<1>(rutaCliente[i]))->siguiente->id])).ultimo->anterior->id == i && (*get<1>(rutaCliente[j]))->siguiente->id == j) {
             combinar = true;
 
-            ruta_i = get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id]);
+            ruta_i = get<0>(rutaCliente[(*get<1>(rutaCliente[i]))->siguiente->id]);
             ruta_j = get<0>(rutaCliente[j]);
         } else {
             cout << "Solapa entre i=" << i << " y j=" << j << endl;
@@ -139,15 +144,18 @@ vector<Route> Heuristicas::clarkeWright() {
                 ruta_i.capacidadRestante -= demandaRutaJ;
                 ruta_i.distanciaTotal += distanciaRutaJ + distancias[i][j] - distancias[depot][i] - distancias[depot][j];
                 
-                NodoCliente* padre_i = get<1>(rutaCliente[i]);
+                NodoCliente* padre_i = (*get<1>(rutaCliente[i]));
                 if (padre_i->siguiente->id == i) {
-                    rutaCliente[i] = make_tuple(ruta_i, padre_i);
+                    rutaCliente[i] = make_tuple(ruta_i, get<1>(rutaCliente[i]));
                 } else {
-                    rutaCliente[i] = make_tuple(Route(), padre_i);
-                    rutaCliente[padre_i->siguiente->id] = make_tuple(ruta_i, padre_i);
+                    NodoCliente** enlace = get<1>(rutaCliente[padre_i->siguiente->id]);
+                    *enlace = (*get<1>(rutaCliente[i]));
+                    rutaCliente[padre_i->siguiente->id] = make_tuple(ruta_i, enlace);
                 }
 
-                rutaCliente[j] = make_tuple(Route(), ruta_i.raiz);
+                NodoCliente** enlace_j = get<1>(rutaCliente[j]);
+                *enlace_j = (*get<1>(rutaCliente[i]));
+                rutaCliente[j] = make_tuple(Route(), enlace_j);
 
                 imprimirRutasMapa(rutaCliente);
                 cout << "=====" << endl;
