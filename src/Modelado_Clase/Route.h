@@ -2,9 +2,13 @@
 #define ROUTE_H
 #include <vector>
 
+#include "NodoCliente.h"
+
 struct Route {
-    std::vector<int> nodes; // el primer y último nodo debe ser el del depot
+    NodoCliente* raiz;
+    NodoCliente* ultimo;
     int totalDemand;
+    int capacidad;
 };
 
 #endif // ROUTE_H
