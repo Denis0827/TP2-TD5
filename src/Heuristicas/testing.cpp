@@ -14,8 +14,9 @@ void imprimirSolucion(const vector<Route>& solucion) {
             cout << actual->id << " ";
             actual = actual->siguiente;
         }
-        cout << "| Demanda total: " << ruta.totalDemand
-             << " | Capacidad restante: " << (ruta.capacidad - ruta.totalDemand) << endl;
+        cout << "| Demanda total: " << ruta.demandaTotal
+             << " | Capacidad restante: " << ruta.capacidadRestante
+             << " | Distancia total: " << ruta.distanciaTotal << endl;
     }
 }
 
@@ -40,7 +41,7 @@ void imprimirRuta(const Route& ruta) {
         std::cout << actual->id << " ";
         actual = actual->siguiente;
     }
-    std::cout << "| Demanda total: " << ruta.totalDemand << std::endl;
+    std::cout << "| Demanda total: " << ruta.demandaTotal << std::endl;
 }
 
 void imprimirMatriz(const vector<vector<int>>& matriz) {
@@ -53,8 +54,9 @@ void imprimirMatriz(const vector<vector<int>>& matriz) {
     }
 }
 
+
 int main() {
-    Heuristicas heuristicas("instancias/2l-cvrp-0/E045-04f.dat");
+    Heuristicas heuristicas("instancias/2l-cvrp-0/E016-03m.dat");
     int depotId = heuristicas.getInstancia().getDepotId();
     vector<vector<double>> distancias = heuristicas.getInstancia().getDistanceMatrix();
     vector<Node> clientes = heuristicas.getInstancia().getNodes();
@@ -64,6 +66,7 @@ int main() {
     vector<Route> solucion = heuristicas.clarkeWright();
     vector<Route> solucion2 = heuristicas.vecinoMasCercano();
 
+    //vector<vector<int>> matriz = ordenarPorDistancias(distancias);
 
     //imprimirMatriz(matriz);
     imprimirSolucion(solucion); // Imprime la solución

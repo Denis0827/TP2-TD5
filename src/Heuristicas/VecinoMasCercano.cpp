@@ -66,7 +66,7 @@ vector<Route> Heuristicas::vecinoMasCercano() {
         nodo2->siguiente = nodo3;
         NodoCliente* ultimo = nodo3;
 
-        Route rutaActual = Route{raiz, ultimo, demandas[primer_cliente_sin_ruta], capacidad};
+        Route rutaActual = Route{raiz, ultimo, demandas[primer_cliente_sin_ruta], capacidad, distancias[depot][primer_cliente_sin_ruta] * 2};
 
         int actual = primer_cliente_sin_ruta;
         int capacidadRestante = capacidad - demandas[primer_cliente_sin_ruta];
@@ -78,7 +78,7 @@ vector<Route> Heuristicas::vecinoMasCercano() {
             puedeAgregar = false; // si se encuentra un cliente se puede seguir buscando mas, sino la ruta esta hecha
             for (int i = 1; i < static_cast<int>(n); i++) {
                 int candidato = matrizClientesOrdenados[actual][i];
-                // verificamos si es posible agrego el cliente a la ruta
+                // verificamos si es posible agregar el cliente a la ruta
                 if (!visitados[candidato] && demandas[candidato] <= capacidadRestante) { 
                     // agregamos el candidato a la ruta
                     NodoCliente* ultimo_ruta = rutaActual.ultimo;
@@ -86,16 +86,17 @@ vector<Route> Heuristicas::vecinoMasCercano() {
                     rutaActual.ultimo->anterior->siguiente = nuevo;
                     rutaActual.ultimo->anterior = nuevo;
 
-                    rutaActual.totalDemand += demandas[candidato];
+                    rutaActual.demandaTotal += demandas[candidato];
+                    rutaActual.distanciaTotal += distancias[actual][candidato] + distancias[candidato][depot] - distancias[actual][depot];
                     capacidadRestante -= demandas[candidato];
                     visitados[candidato] = 1;
                     actual = candidato;
                     clientesNoVisitados--;
-                    puedeAgregar = false;
-                    break;  // solo agregamos un cliente por iteración
+                    i = 1; // empezamos a recorrer el vector de distancias del nuevo candidato desde cero
                 }
             }
         }
+        rutaActual.capacidadRestante = capacidadRestante;
         solucion.push_back(rutaActual); // agrego ruta a la solucion
     }
     

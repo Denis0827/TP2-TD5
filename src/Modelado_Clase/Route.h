@@ -7,8 +7,9 @@
 struct Route {
     NodoCliente* raiz;
     NodoCliente* ultimo;
-    int totalDemand;
-    int capacidad;
+    int demandaTotal;
+    int capacidadRestante;
+    double distanciaTotal;
 };
 
 #endif // ROUTE_H

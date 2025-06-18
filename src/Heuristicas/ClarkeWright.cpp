@@ -6,9 +6,9 @@ vector<Saving> calcularSavings(const vector<vector<double>>& distancias, int dep
     vector<Saving> savings;
     int n = distancias.size();
 
-    for (int i = 0; i < static_cast<int>(n); ++i) {
+    for (int i = 1; i < static_cast<int>(n); i++) {
         if (i != depotId) {
-            for (int j = i + 1; j < n; ++j) {
+            for (int j = i + 1; j < static_cast<int>(n); j++) {
                 if (j != depotId) {
                     double sij = distancias[depotId][i] + distancias[depotId][j] - distancias[i][j]; // calcula el ahorro
                     savings.push_back({i, j, sij});
@@ -63,7 +63,7 @@ vector<Route> Heuristicas::clarkeWright() {
             // chequeo de solapamiento
             if (ruta_i.ultimo->anterior->id == i // si el cliente i es el último a visitar en la ruta_i le puedo seguir agregando rutas
                 && ruta_j.raiz->siguiente->id == j) { // si j es el primer cliente que se visita en esta ruta se puede agregar la ruta_j a la ruta_i
-                int demandaAgregada = ruta_i.totalDemand + ruta_j.totalDemand;
+                int demandaAgregada = ruta_i.demandaTotal + ruta_j.demandaTotal;
                 if (demandaAgregada <= capacidad) { // si la nueva demanda no supera la capacidad agregamos ruta_j a ruta_i
                     NodoCliente* ultimo_ruta_i = ruta_i.ultimo;
                     NodoCliente* raiz_ruta_j = ruta_j.raiz;
@@ -80,7 +80,7 @@ vector<Route> Heuristicas::clarkeWright() {
                     raiz_ruta_j->siguiente = nullptr;
                     delete(raiz_ruta_j); // desconectamos y eliminamos el primer nodo de ruta_j
 
-                    ruta_i.totalDemand = demandaAgregada;
+                    ruta_i.demandaTotal = demandaAgregada;
                     rutaCliente[i] = ruta_i;
                     rutaCliente.erase(j); // eliminamos ruta_j del mapa cuando ya es parte de ruta_i
                 }
@@ -95,7 +95,7 @@ vector<Route> Heuristicas::clarkeWright() {
 
     // Si k = 0, significa que no hay restricción de vehículos
     if (k != 0 && static_cast<int>(solucion.size()) > k) {
-        return {}; // si la cantidad de vehículos en la solución sobrepasa el límite de vehículos, no existe sol óptima
+        return solucion; // si la cantidad de vehículos en la solución sobrepasa el límite de vehículos, no existe sol óptima
     } else {
         return solucion;
     }
