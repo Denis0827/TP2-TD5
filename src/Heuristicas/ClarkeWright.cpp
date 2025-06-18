@@ -32,7 +32,7 @@ auto imprimirRutasMapa = [](const unordered_map<int, tuple<Route, NodoCliente*>>
     std::cout << "Estado actual de las rutas en el mapa:" << std::endl;
     for (const auto& par : rutas) {
         std::cout << "Cliente clave: " << par.first
-                  << " | Padre: " << get<1>(par.second)
+                  //<< " | Padre: " << get<1>(par.second)->siguiente->id
                   << " | Ruta: ";
         NodoCliente* actual = get<0>(par.second).raiz;
         while (actual != nullptr) {
@@ -98,12 +98,13 @@ vector<Route> Heuristicas::clarkeWright() {
         // chequeo solapamiento
         if ((get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id])).ultimo->anterior->id == i && get<1>(rutaCliente[j])->siguiente->id == j) {
             combinar = true;
-            
-            cout << (get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id])).ultimo->anterior->anterior->id << endl;
 
+            cout << (get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id])).ultimo->anterior->anterior->id << endl;
             cout << (get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id])).ultimo->anterior->id << endl;
             ruta_i = get<0>(rutaCliente[get<1>(rutaCliente[i])->siguiente->id]);
             ruta_j = get<0>(rutaCliente[j]);
+        } else {
+            cout << "Solapa entre i=" << i << " y j=" << j << endl;
         }
 
         if (combinar) { 
@@ -152,6 +153,8 @@ vector<Route> Heuristicas::clarkeWright() {
 
                 imprimirRutasMapa(rutaCliente);
                 cout << "=====" << endl;
+            } else {
+                cout << "No entro" << endl;
             }
         }
     }
