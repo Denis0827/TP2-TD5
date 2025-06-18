@@ -56,7 +56,7 @@ void imprimirMatriz(const vector<vector<int>>& matriz) {
 
 
 int main() {
-    Heuristicas heuristicas("instancias/2l-cvrp-0/E016-03m.dat");
+    Heuristicas heuristicas("instancias/2l-cvrp-0/E045-04f.dat");
     int depotId = heuristicas.getInstancia().getDepotId();
     vector<vector<double>> distancias = heuristicas.getInstancia().getDistanceMatrix();
     vector<Node> clientes = heuristicas.getInstancia().getNodes();

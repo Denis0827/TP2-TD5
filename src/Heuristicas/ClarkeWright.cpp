@@ -43,7 +43,8 @@ vector<Route> Heuristicas::clarkeWright() {
             nodo2->siguiente = nodo3;    
             NodoCliente* ultimo = nodo3;
 
-            Route ruta = Route{raiz, ultimo, demandas[i], capacidad};
+            double distancia_total = distancias[depot][i] * 2;
+            Route ruta = Route{raiz, ultimo, demandas[i], capacidad - demandas[i], distancia_total};
             rutaCliente[i] = ruta;
         }
     }
@@ -68,6 +69,9 @@ vector<Route> Heuristicas::clarkeWright() {
                     NodoCliente* ultimo_ruta_i = ruta_i.ultimo;
                     NodoCliente* raiz_ruta_j = ruta_j.raiz;
 
+                    int demandaRutaJ = ruta_j.demandaTotal;
+                    int distanciaRutaJ = ruta_j.distanciaTotal;
+
                     // conectamos el último cliente de ruta_i con el primero de ruta_j
                     ruta_j.raiz->siguiente->anterior = ruta_i.ultimo->anterior; 
                     ruta_i.ultimo->anterior->siguiente = ruta_j.raiz->siguiente;
@@ -81,6 +85,8 @@ vector<Route> Heuristicas::clarkeWright() {
                     delete(raiz_ruta_j); // desconectamos y eliminamos el primer nodo de ruta_j
 
                     ruta_i.demandaTotal = demandaAgregada;
+                    ruta_i.capacidadRestante -= demandaRutaJ;
+                    ruta_i.distanciaTotal += distanciaRutaJ + distancias[i][j] - distancias[depot][i] - distancias[depot][j];
                     rutaCliente[i] = ruta_i;
                     rutaCliente.erase(j); // eliminamos ruta_j del mapa cuando ya es parte de ruta_i
                 }
