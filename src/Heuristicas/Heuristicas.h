@@ -10,7 +10,6 @@
 #include <string>
 #include <algorithm>
 #include <unordered_map>
-#include <map>
 #include <tuple>
 
 using namespace std;
@@ -20,7 +19,7 @@ class Heuristicas {
         VRPLIBReader _instancia;
 
     public:
-        Heuristicas(const string& instanciaPath); 
+        Heuristicas(const string& instanciaPath); // O(1)
         VRPLIBReader getInstancia(); // O(1)
 
         vector<Route> clarkeWright(); // O(N^2*logN)

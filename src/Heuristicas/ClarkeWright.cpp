@@ -128,13 +128,12 @@ vector<Route> Heuristicas::clarkeWright() {
                     ruta_i.unirRutas(ruta_j, distancias[i][j], distancias[depot][i], distancias[depot][j]); // O(1)
                     // seteamos la ruta unida al cliente padre que debe tener la ruta
                     rutaCliente[cliente_padre] = ruta_i; // O(1) en promedio
-                    // la otra ruta la borramos
-                    rutaCliente.erase(cliente_borrar); // O(1) en promedio, teniendo en cuenta que solo existe un valor con esa clave
                 } else { // lo mismo pero invertido
                     ruta_j.unirRutas(ruta_i, distancias[i][j], distancias[depot][j], distancias[depot][i]); // O(1)
                     rutaCliente[cliente_padre] = ruta_j; // O(1) en promedio
-                    rutaCliente.erase(cliente_borrar); // O(1) en promedio
                 }
+                // la otra ruta la borramos
+                rutaCliente.erase(cliente_borrar); // O(1) en promedio, teniendo en cuenta que solo existe un valor con esa clave
             } 
         } 
     }
