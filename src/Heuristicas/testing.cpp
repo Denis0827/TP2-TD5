@@ -1,4 +1,6 @@
 #include "Heuristicas.h"
+#include <chrono>
+using namespace std::chrono;
 
 // Imprime todas las rutas de la solución
 void imprimirSolucion(const vector<Route>& solucion) {
@@ -75,29 +77,39 @@ double recalcularDistanciaTotalSolucion(const vector<Route>& solucion, const vec
     return total;
 }
 
-
-
 int main() {
-    Heuristicas heuristicas("instancias/2l-cvrp-0/E016-03m.dat");
-    int depotId = heuristicas.getInstancia().getDepotId();
+    Heuristicas heuristicas("instancias/2l-cvrp-0/E200-17c.dat");
+    //int depotId = heuristicas.getInstancia().getDepotId();
     vector<vector<double>> distancias = heuristicas.getInstancia().getDistanceMatrix();
     vector<Node> clientes = heuristicas.getInstancia().getNodes();
     vector<int> demandas = heuristicas.getInstancia().getDemands();
-    int n = heuristicas.getInstancia().getDimension();
+    //int n = heuristicas.getInstancia().getDimension();
 
+    cout << "Solución óptima utilizando ClarkeWright" << endl;
+    auto start1 = high_resolution_clock::now();
     vector<Route> solucion = heuristicas.clarkeWright();
+    auto end1 = high_resolution_clock::now();
+    imprimirSolucion(solucion);
+    auto duracion1_us = duration_cast<microseconds>(end1 - start1).count();
+    if (duracion1_us < 1000) {
+        cout << "Tiempo de ejecución ClarkeWright: " << duracion1_us << " µs" << endl;
+    } else {
+        cout << "Tiempo de ejecución ClarkeWright: " << duracion1_us / 1000.0 << " ms" << endl;
+    }
+    cout << "==========" << endl;
+
+    cout << "Solución óptima utilizando VecinosMasCercanos" << endl;
+    auto start2 = high_resolution_clock::now();
     vector<Route> solucion2 = heuristicas.vecinoMasCercano();
-
-    double distancia_real = recalcularDistanciaTotalSolucion(solucion, distancias);
-
-    //vector<vector<int>> matriz = ordenarPorDistancias(distancias);
-
-    //imprimirMatriz(matriz);
-    imprimirSolucion(solucion); // Imprime la solución
-    cout << "==========" << endl;
+    auto end2 = high_resolution_clock::now();
     imprimirSolucion(solucion2);
+    auto duracion2_us = duration_cast<microseconds>(end2 - start2).count();
+    if (duracion2_us < 1000) {
+        cout << "Tiempo de ejecución VecinosMasCercanos: " << duracion2_us << " µs" << endl;
+    } else {
+        cout << "Tiempo de ejecución VecinosMasCercanos: " << duracion2_us / 1000.0 << " ms" << endl;
+    }
     cout << "==========" << endl;
-    cout << distancia_real << endl;
 
     return 0;
 }
