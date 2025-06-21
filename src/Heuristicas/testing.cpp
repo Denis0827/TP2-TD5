@@ -12,41 +12,23 @@ void imprimirSolucion(const vector<Route>& solucion) {
     double distanciaTotalGlobal = 0.0;
     for (const auto& ruta: solucion) {
         cout << "Ruta " << id++ << ": ";
-        NodoCliente* actual = ruta.raiz;
+        const NodoCliente* actual = ruta.getRaizSinMod();
         while (actual != nullptr) {
             cout << actual->id << " ";
             actual = actual->siguiente;
         }
-        cout << "| Demanda total: " << ruta.demandaTotal
-             << " | Capacidad restante: " << ruta.capacidadRestante
-             << " | Distancia total: " << ruta.distanciaTotal << endl;
-        distanciaTotalGlobal += ruta.distanciaTotal;
+        cout << "| Demanda total: " << ruta.getDemandaTotal()
+             << " | Capacidad restante: " << ruta.getCapacidadRestante()
+             << " | Distancia total: " << ruta.getDistanciaTotal() << endl;
+        distanciaTotalGlobal += ruta.getDistanciaTotal();
     }
     cout << "Distancia total sumada de todas las rutas: " << distanciaTotalGlobal << endl;
 }
-
-
-//void imprimirSavings(const std::vector<Saving>& savings) {
-//    for (const auto& s : savings) {
-//        std::cout << "i: " << s.i << ", j: " << s.j << ", saving: " << s.saving << std::endl;
-//    }
-//}
 
 void imprimirNodos(const std::vector<Node>& nodos) {
     for (const auto& nodo : nodos) {
         std::cout << "ID: " << nodo.id << ", x: " << nodo.x << ", y: " << nodo.y << std::endl;
     }
-}
-
-// Imprime la secuencia de nodos de una ruta enlazada
-void imprimirRuta(const Route& ruta) {
-    std::cout << "Ruta: ";
-    NodoCliente* actual = ruta.raiz;
-    while (actual != nullptr) {
-        std::cout << actual->id << " ";
-        actual = actual->siguiente;
-    }
-    std::cout << "| Demanda total: " << ruta.demandaTotal << std::endl;
 }
 
 void imprimirMatriz(const vector<vector<int>>& matriz) {
@@ -59,20 +41,14 @@ void imprimirMatriz(const vector<vector<int>>& matriz) {
     }
 }
 
-double recalcularDistanciaTotal(NodoCliente* raiz, const vector<vector<double>>& distancias) {
-    double total = 0.0;
-    NodoCliente* actual = raiz;
-    while (actual->siguiente != nullptr) {
-        total += distancias[actual->id][actual->siguiente->id];
-        actual = actual->siguiente;
-    }
-    return total;
-}
-
-double recalcularDistanciaTotalSolucion(const vector<Route>& solucion, const vector<vector<double>>& distancias) {
+double recalcularDistanciaTotal(const vector<Route>& solucion, const vector<vector<double>>& distancias) {
     double total = 0.0;
     for (const auto& ruta : solucion) {
-        total += recalcularDistanciaTotal(ruta.raiz, distancias);
+        const NodoCliente* actual = ruta.getRaizSinMod();
+        while (actual && actual->siguiente) {
+            total += distancias[actual->id][actual->siguiente->id];
+            actual = actual->siguiente;
+        }
     }
     return total;
 }

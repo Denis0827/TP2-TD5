@@ -57,35 +57,8 @@ tuple<int, int> unionFind(vector<int>& padres_ruta, vector<int>& rango_cliente, 
 }
 
 bool chequeoSolapamiento(Route ruta_i, Route ruta_j, int i, int j) {
-    return ruta_i.raiz->siguiente->id != ruta_j.raiz->siguiente->id && // si son iguales son la misma ruta
-        ruta_i.ultimo->anterior->id == i && ruta_j.raiz->siguiente->id == j; // solapamiento
-}
-
-// Función auxiliar para unir ruta_i y ruta_j en ruta_i
-// Pre: el cliente i es el último de la ruta_i (sin depot), el cliente j es el primero de la ruta_j (sin depot)
-void unionRutas(const vector<vector<double>>& distancias, Route& ruta_i, Route& ruta_j, int i, int j, int depot) {
-    NodoCliente* ultimo_ruta_i = ruta_i.ultimo;
-    NodoCliente* raiz_ruta_j = ruta_j.raiz;
-
-    int demanda_ruta_i = ruta_i.demandaTotal;
-    int demanda_ruta_j = ruta_j.demandaTotal;
-    double distancia_ruta_j = ruta_j.distanciaTotal;
-
-    // conectamos el último cliente de ruta_i con el primero de ruta_j
-    ruta_j.raiz->siguiente->anterior = ruta_i.ultimo->anterior; 
-    ruta_i.ultimo->anterior->siguiente = ruta_j.raiz->siguiente;
-    ruta_i.ultimo = ruta_j.ultimo; // la ruta_i recorre hasta el final de la ruta_j
-
-    ultimo_ruta_i->anterior = nullptr;
-    ultimo_ruta_i->siguiente = nullptr;
-    delete(ultimo_ruta_i); // desconectamos y eliminamos el último nodo de ruta_i
-    raiz_ruta_j->anterior = nullptr;
-    raiz_ruta_j->siguiente = nullptr;
-    delete(raiz_ruta_j); // desconectamos y eliminamos el primer nodo de ruta_j
-
-    ruta_i.demandaTotal = demanda_ruta_i + demanda_ruta_j;
-    ruta_i.capacidadRestante -= demanda_ruta_j;
-    ruta_i.distanciaTotal += distancia_ruta_j + distancias[i][j] - distancias[depot][i] - distancias[depot][j];
+    return ruta_i.getClientePadreId() != ruta_j.getClientePadreId() && // si son iguales son la misma ruta
+        ruta_i.getClienteFinalId() == i && ruta_j.getClientePadreId() == j; // solapamiento
 }
 
 vector<Route> Heuristicas::clarkeWright() {
@@ -100,18 +73,9 @@ vector<Route> Heuristicas::clarkeWright() {
     
     for (int i = 1; i <= n; i++) {
         if (i != depot) {
-            // inicializamos cada ruta como {depot, i, depot}
-            NodoCliente* raiz = new NodoCliente{depot, nullptr, nullptr};
-            
-            NodoCliente* nodo2 = new NodoCliente{i, raiz, nullptr};   
-            raiz->siguiente = nodo2; 
-
-            NodoCliente* nodo3 = new NodoCliente{depot, nodo2, nullptr}; 
-            nodo2->siguiente = nodo3;    
-            NodoCliente* ultimo = nodo3;
-
-            double distancia_total = distancias[depot][i] * 2; // la distancia es la misma en la ida y vuelta
-            Route ruta = Route{raiz = raiz, ultimo = ultimo, demandas[i], capacidad - demandas[i], distancia_total};
+            Route ruta = Route(capacidad);
+            ruta.agregarDepot(depot);
+            ruta.agregarClienteInicio(i, demandas[i], distancias[depot][i]);
             rutaCliente[i] = ruta;
         }
     }
@@ -143,18 +107,18 @@ vector<Route> Heuristicas::clarkeWright() {
         }
 
         if (!solapado) { 
-            int demandaAgregada = ruta_i.demandaTotal + ruta_j.demandaTotal;
+            int demandaAgregada = ruta_i.getDemandaTotal() + ruta_j.getDemandaTotal();
             if (demandaAgregada <= capacidad) { // si la nueva demanda no supera la capacidad agregamos ruta_j a ruta_i
                 tuple<int, int> res_unionFind = unionFind(padres_ruta, rango_cliente, i, j);
                 int cliente_padre = get<0>(res_unionFind);
                 int cliente_borrar = get<1>(res_unionFind);                  
 
                 if (!invertir) {
-                    unionRutas(distancias, ruta_i, ruta_j, i, j, depot);
+                    ruta_i.unirRutas(ruta_j, distancias[i][j], distancias[depot][i], distancias[depot][j]);
                     rutaCliente[cliente_padre] = ruta_i;
                     rutaCliente.erase(cliente_borrar);
                 } else {
-                    unionRutas(distancias, ruta_j, ruta_i, j, i, depot);
+                    ruta_j.unirRutas(ruta_i, distancias[i][j], distancias[depot][j], distancias[depot][i]);
                     rutaCliente[cliente_padre] = ruta_j;
                     rutaCliente.erase(cliente_borrar);
                 }

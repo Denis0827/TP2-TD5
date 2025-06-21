@@ -45,9 +45,6 @@ vector<Route> Heuristicas::vecinoMasCercano() {
 
     // empiezo del depot, veo el nodo con min distancia y agregarlo a la ruta
     while (clientesNoVisitados > 0) {
-        // inicializamos la ruta como {depot, matriz[depot][0], depot}
-        NodoCliente* raiz = new NodoCliente{depot, nullptr, nullptr};
-
         // busco en el vector de distancias del depot cuál es el primero que no fue visitado todavía
         int primer_cliente_sin_ruta = 0;
         for (int i = 1; i < static_cast<int>(n); i++) {
@@ -59,36 +56,24 @@ vector<Route> Heuristicas::vecinoMasCercano() {
             }
         }
 
-        NodoCliente* nodo2 = new NodoCliente{primer_cliente_sin_ruta, raiz, nullptr};
-        raiz->siguiente = nodo2;
-
-        NodoCliente* nodo3 = new NodoCliente{depot, nodo2, nullptr};
-        nodo2->siguiente = nodo3;
-        NodoCliente* ultimo = nodo3;
-
-        Route rutaActual = Route{raiz, ultimo, demandas[primer_cliente_sin_ruta], capacidad, distancias[depot][primer_cliente_sin_ruta] * 2};
+        Route rutaActual = Route(capacidad);
+        rutaActual.agregarDepot(depot);
+        rutaActual.agregarClienteInicio(primer_cliente_sin_ruta, demandas[primer_cliente_sin_ruta], 
+            distancias[depot][primer_cliente_sin_ruta]);
 
         int actual = primer_cliente_sin_ruta;
-        int capacidadRestante = capacidad - demandas[primer_cliente_sin_ruta];
-
-        // me dice si encuentra clientes que se pueden agregar a la ruta
-        bool puedeAgregar = true;
+        bool puedeAgregar = true; // me dice si encuentra clientes que se pueden agregar a la ruta
 
         while (puedeAgregar != false) {
             puedeAgregar = false; // si se encuentra un cliente se puede seguir buscando mas, sino la ruta esta hecha
             for (int i = 1; i < static_cast<int>(n); i++) {
                 int candidato = matrizClientesOrdenados[actual][i];
                 // verificamos si es posible agregar el cliente a la ruta
-                if (!visitados[candidato] && demandas[candidato] <= capacidadRestante) { 
+                if (!visitados[candidato] && demandas[candidato] <= rutaActual.getCapacidadRestante()) { 
                     // agregamos el candidato a la ruta
-                    NodoCliente* ultimo_ruta = rutaActual.ultimo;
-                    NodoCliente* nuevo = new NodoCliente{candidato, ultimo_ruta->anterior, ultimo_ruta};
-                    rutaActual.ultimo->anterior->siguiente = nuevo;
-                    rutaActual.ultimo->anterior = nuevo;
+                    rutaActual.agregarClienteFinal(candidato, demandas[candidato], distancias[actual][candidato], 
+                        distancias[candidato][depot], distancias[actual][depot]);
 
-                    rutaActual.demandaTotal += demandas[candidato];
-                    rutaActual.distanciaTotal += distancias[actual][candidato] + distancias[candidato][depot] - distancias[actual][depot];
-                    capacidadRestante -= demandas[candidato];
                     visitados[candidato] = 1;
                     actual = candidato;
                     clientesNoVisitados--;
@@ -96,7 +81,6 @@ vector<Route> Heuristicas::vecinoMasCercano() {
                 }
             }
         }
-        rutaActual.capacidadRestante = capacidadRestante;
         solucion.push_back(rutaActual); // agrego ruta a la solucion
     }
     

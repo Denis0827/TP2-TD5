@@ -4,8 +4,8 @@
 
 struct NodoCliente {
     int id;
-    NodoCliente *anterior;
-    NodoCliente *siguiente;
+    NodoCliente* anterior;
+    NodoCliente* siguiente;
 };
 
 #endif // NODOCLIENTE_H
