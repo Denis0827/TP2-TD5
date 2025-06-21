@@ -1,13 +1,6 @@
-#include "Relocate.h"
-#include <algorithm>
-#include <unordered_map>
-#include <iostream>
-#include <string>
-#include <vector>
+#include "Heuristicas.h"
 
-using namespace std;
-
-vector<Route> relocate(const VRPLIBReader& instancia, vector<Route>& solucion_inicial) {
+vector<Route> Heuristicas::relocate(const vector<Route>& solucion_inicial) {
     vector<Route> solucion = solucion_inicial; 
     int cantidad_vehiculos = solucion_inicial.size();
     const vector<vector<double>>& distancias = instancia.getDistanceMatrix();

@@ -1,15 +1,15 @@
 #include "Heuristicas.h"
 
 vector<vector<int>> ordenarPorDistancias(const vector<vector<double>>& distancias){
-    int n = distancias.size();
-    vector<vector<int>> clientes_ordenados(n, vector<int>(n - 1, 0)); // inicializa todo en 0
+    int n = distancias.size(); // O(1)
+    vector<vector<int>> clientes_ordenados(n, vector<int>(n - 1, 0)); // O(N^2) inicializa todo en 0
     // cada fila i es el vector de mínimas distancias del cliente i
 
-    for (int i = 1; i < n; i++) {
-        vector<std::pair<double, int>> distanciasDesdeI;
-        for (int j = 1; j < n; j++) {
-            if (i != j) {
-                distanciasDesdeI.push_back({distancias[i][j], j});
+    for (int i = 1; i < n; i++) { // O(N)
+        vector<std::pair<double, int>> distanciasDesdeI; // O(1)
+        for (int j = 1; j < n; j++) { // O(N)
+            if (i != j) { // O(1)
+                distanciasDesdeI.push_back({distancias[i][j], j}); // O(1)
             }
         }
         

@@ -44,11 +44,11 @@ NodoCliente* Route::getUltimo() {
     return this->_ultimo;
 }
 
-NodoCliente* Route::getRaizSinMod() const {
+const NodoCliente* Route::getRaizSinMod() const {
     return this->_raiz;
 }
 
-NodoCliente* Route::getUltimoSinMod() const {
+const NodoCliente* Route::getUltimoSinMod() const {
     return this->_ultimo;
 }
 
