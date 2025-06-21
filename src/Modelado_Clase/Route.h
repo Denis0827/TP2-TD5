@@ -1,7 +1,6 @@
 #ifndef ROUTE_H
 #define ROUTE_H
 
-#include <vector>
 #include <iostream>
 #include "NodoCliente.h"
 using namespace std;
@@ -30,8 +29,10 @@ class Route {
         const NodoCliente* getUltimoSinMod() const; // O(1)
 
         void agregarDepot(int depot); // O(1)
-        void agregarClienteInicio(int id, int demanda, double distancia); // O(1)
-        void agregarClienteFinal(int id, int demanda, double dist_ij, double dist_depj, double dist_depi); // O(1)
+        // Por default, iniciaizamos dist_ij y dist_depj en 0.0 porque es el caso borde donde agregamos cliente
+        // a una ruta donde no hay todavía ningún cliente (solo tenemos a los 2 depot)
+        void agregarClienteInicio(int id, int demanda, double dist_depi, double dist_ij = 0.0, double dist_depj = 0.0); // O(1)
+        void agregarClienteFinal(int id, int demanda, double dist_depi, double dist_ij = 0.0, double dist_depj = 0.0); // O(1)
         void unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double dis_depj); // O(1)
         void imprimirRuta() const; // O(N)
 };

@@ -75,7 +75,7 @@ vector<Route> Heuristicas::vecinoMasCercano() {
 
         Route rutaActual = Route(capacidad); // O(1) creamos la ruta nueva
         rutaActual.agregarDepot(depot); // O(1)
-        rutaActual.agregarClienteInicio(primer_cliente_sin_ruta, demandas[primer_cliente_sin_ruta], 
+        rutaActual.agregarClienteInicio(primer_cliente_sin_ruta, demandas[primer_cliente_sin_ruta],
             distancias[depot][primer_cliente_sin_ruta]); // O(1) agregamos el cliente encontrado
 
         int actual = primer_cliente_sin_ruta; // O(1)
@@ -87,8 +87,8 @@ vector<Route> Heuristicas::vecinoMasCercano() {
             
             if (candidato != -1) { // O(1) solo entro si existe candidato, es decir si existe minimo que cumple la factibilidad
                 // agregamos el candidato a la ruta
-                rutaActual.agregarClienteFinal(candidato, demandas[candidato], distancias[actual][candidato], 
-                    distancias[candidato][depot], distancias[actual][depot]); // O(1)
+                rutaActual.agregarClienteFinal(candidato, demandas[candidato], distancias[actual][depot], distancias[actual][candidato], 
+                    distancias[candidato][depot]); // O(1)
 
                 visitados[candidato] = 1; // O(1) ya visité entonces el candidato
                 actual = candidato; // O(1) ahora busco el minimo cliente desde el candidato (candidato del candidato)
