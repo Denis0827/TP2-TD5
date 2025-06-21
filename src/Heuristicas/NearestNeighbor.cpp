@@ -42,7 +42,7 @@ int clienteMinimoDistancia(const vector<double>& distanciasCliente, int id, cons
 }
 // Complejidad total: O(N)
 
-vector<Route> Heuristicas::vecinoMasCercano() {
+vector<Route> Heuristicas::nearestNeighbor() {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix(); // O(1)
     const vector<int>& demandas = this->_instancia.getDemands(); // O(1)
     int depot = this->_instancia.getDepotId(); // O(1)
@@ -112,4 +112,4 @@ vector<Route> Heuristicas::vecinoMasCercano() {
         return solucion;
     }
 }
-// Complejidad total: O(N^2)
+// Complejidad total NearestNeighbor: O(N^2)

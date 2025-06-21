@@ -4,7 +4,7 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -I./src/Modelado_Clase -I./src/Heuristic
 SRC = src/Heuristicas/testing.cpp \
       src/Heuristicas/InicializarHeuristicas.cpp \
       src/Heuristicas/ClarkeWright.cpp \
-	src/Heuristicas/VecinoMasCercano.cpp \
+	src/Heuristicas/NearestNeighbor.cpp \
       src/Modelado_Clase/VRPLIBReader.cpp \
       src/Modelado_Clase/Route.cpp
 
@@ -13,7 +13,7 @@ HEADERS = src/Heuristicas/Heuristicas.h \
           src/Modelado_Clase/VRPLIBReader.h \
           src/Modelado_Clase/Saving.h \
           src/Modelado_Clase/Route.h \
-	    src/Modelado_Clase/NodoCliente.h
+	    src/Modelado_Clase/NodeRoute.h
 
 OBJ = $(SRC:.cpp=.o)
 EXEC = heuristicas

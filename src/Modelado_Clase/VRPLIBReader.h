@@ -12,41 +12,40 @@ struct Node {
 };
 
 class VRPLIBReader {
-public:
-    // Constructor that takes the path to the VRPLIB file
-    explicit VRPLIBReader(const std::string& filePath);
+    public:
+        // Constructor that takes the path to the VRPLIB file
+        explicit VRPLIBReader(const std::string& filePath);
 
-    // --- Getter methods to access the parsed data ---
+        // --- Getter methods to access the parsed data ---
 
-    const std::string& getName() const;
-    int getDimension() const;
-    int getCapacity() const;
-    int getNumVehicles() const;
-    const std::vector<Node>& getNodes() const;
-    const std::vector<int>& getDemands() const;
-    int getDepotId() const;
-    const std::vector<std::vector<double>>& getDistanceMatrix() const;
+        const std::string& getName() const;
+        int getDimension() const;
+        int getCapacity() const;
+        int getNumVehicles() const;
+        const std::vector<Node>& getNodes() const;
+        const std::vector<int>& getDemands() const;
+        int getDepotId() const;
+        const std::vector<std::vector<double>>& getDistanceMatrix() const;
 
-private:
-    // --- Member variables to store instance data ---
+    private:
+        // --- Member variables to store instance data ---
 
-    std::string name;
-    int dimension {0};
-    int capacity {0};
-    int numVehicles {0}; // Note: Some instances might not specify this
-    int depotId {0};
-    std::vector<Node> nodes;
-    std::vector<int> demands;
-    std::vector<std::vector<double>> distanceMatrix;
+        std::string name;
+        int dimension {0};
+        int capacity {0};
+        int numVehicles {0}; // Note: Some instances might not specify this
+        int depotId {0};
+        std::vector<Node> nodes;
+        std::vector<int> demands;
+        std::vector<std::vector<double>> distanceMatrix;
 
-    // --- Private helper methods for parsing and computation ---
+        // --- Private helper methods for parsing and computation ---
 
-    // Main parsing method, called by the constructor
-    void parse(const std::string& filePath);
+        // Main parsing method, called by the constructor
+        void parse(const std::string& filePath);
 
-    // Computes the Euclidean distance matrix after parsing node coordinates
-    void computeDistanceMatrix();
+        // Computes the Euclidean distance matrix after parsing node coordinates
+        void computeDistanceMatrix();
 };
 
 #endif // VRPLIB_READER_H
-

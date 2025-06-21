@@ -23,10 +23,9 @@ class Heuristicas {
         VRPLIBReader getInstancia(); // O(1)
 
         vector<Route> clarkeWright(); // O(N^2*logN)
-        vector<Route> vecinoMasCercano(); // O(N^2)
+        vector<Route> nearestNeighbor(); // O(N^2)
         vector<Route> relocate(const vector<Route>& solucion_inicial);
         vector<Route> swap(const vector<Route>& solucion_inicial);
-
 };
 
 #endif // HEURISTICAS_H

@@ -1,6 +1,5 @@
 #ifndef SAVING_H
 #define SAVING_H
-#include <vector>
 
 struct Saving {
     int i, j;

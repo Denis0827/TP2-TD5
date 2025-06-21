@@ -1,14 +1,14 @@
 #ifndef ROUTE_H
 #define ROUTE_H
 
+#include "NodeRoute.h"
 #include <iostream>
-#include "NodoCliente.h"
 using namespace std;
 
 class Route {
     private:
-        NodoCliente* _raiz;
-        NodoCliente* _ultimo;
+        NodeRoute* _raiz;
+        NodeRoute* _ultimo;
         int _demandaTotal;
         int _capacidad;
         double _distanciaTotal;
@@ -23,10 +23,10 @@ class Route {
         int getCapacidadRestante() const; // O(1)
         double getDistanciaTotal() const; // O(1)
 
-        NodoCliente* getRaiz(); // O(1)
-        NodoCliente* getUltimo(); // O(1)
-        const NodoCliente* getRaizSinMod() const; // O(1)
-        const NodoCliente* getUltimoSinMod() const; // O(1)
+        NodeRoute* getRaiz(); // O(1)
+        NodeRoute* getUltimo(); // O(1)
+        const NodeRoute* getRaizSinMod() const; // O(1)
+        const NodeRoute* getUltimoSinMod() const; // O(1)
 
         void agregarDepot(int depot); // O(1)
         // Por default, iniciaizamos dist_ij y dist_depj en 0.0 porque es el caso borde donde agregamos cliente

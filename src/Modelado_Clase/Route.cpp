@@ -17,15 +17,15 @@ Route::Route(int capacidad) {
 }
 
 void Route::agregarDepot(int depot) {
-    this->_raiz = new NodoCliente{depot, nullptr, nullptr}; // O(1)
-    this->_ultimo = new NodoCliente{depot, this->_raiz, nullptr}; // O(1)
+    this->_raiz = new NodeRoute{depot, nullptr, nullptr}; // O(1)
+    this->_ultimo = new NodeRoute{depot, this->_raiz, nullptr}; // O(1)
     this->_raiz->siguiente = this->_ultimo; // O(1)
 }
 
 // Pre: debe estar el depot como raiz y ultimo en la ruta
 void Route::agregarClienteInicio(int id, int demanda, double dist_depi, double dist_ij, double dist_depj) {
-    NodoCliente* primerCliente = this->_raiz->siguiente; // O(1)
-    NodoCliente* nuevo = new NodoCliente{id, this->_raiz, primerCliente}; // O(1)
+    NodeRoute* primerCliente = this->_raiz->siguiente; // O(1)
+    NodeRoute* nuevo = new NodeRoute{id, this->_raiz, primerCliente}; // O(1)
 
     this->_raiz->siguiente = nuevo; // O(1)
     if (primerCliente != this->_ultimo) { // O(1)
@@ -41,8 +41,8 @@ void Route::agregarClienteInicio(int id, int demanda, double dist_depi, double d
 
 // Pre: debe estar el depot como raiz y ultimo en la ruta
 void Route::agregarClienteFinal(int id, int demanda, double dist_depi, double dist_ij, double dist_depj) {
-    NodoCliente* ultimoCliente = this->_ultimo->anterior; // O(1)
-    NodoCliente* nuevo = new NodoCliente{id, ultimoCliente, this->_ultimo}; // O(1)
+    NodeRoute* ultimoCliente = this->_ultimo->anterior; // O(1)
+    NodeRoute* nuevo = new NodeRoute{id, ultimoCliente, this->_ultimo}; // O(1)
 
     this->_ultimo->anterior = nuevo; // O(1)
     if (ultimoCliente != this->_raiz) { // O(1)
@@ -58,8 +58,8 @@ void Route::agregarClienteFinal(int id, int demanda, double dist_depi, double di
 
 // Pre: para las distancias, i es el último cliente de la ruta actual, el cliente j es el primero de otraRuta
 void Route::unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double dis_depj) {
-    NodoCliente* ultimo_ruta_i = this->_ultimo; // O(1)
-    NodoCliente* raiz_ruta_j = otraRuta.getRaiz(); // O(1)
+    NodeRoute* ultimo_ruta_i = this->_ultimo; // O(1)
+    NodeRoute* raiz_ruta_j = otraRuta.getRaiz(); // O(1)
 
     // conectamos el último cliente de ruta_i con el primero de ruta_j
     raiz_ruta_j->siguiente->anterior = ultimo_ruta_i->anterior; // O(1)
@@ -79,7 +79,7 @@ void Route::unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double 
 
 void Route::imprimirRuta() const {
     cout << "Ruta: "; // O(1)
-    const NodoCliente* actual = this->getRaizSinMod(); // O(1)
+    const NodeRoute* actual = this->getRaizSinMod(); // O(1)
     while (actual != nullptr) { // O(N)
         cout << actual->id << " "; // O(1)
         actual = actual->siguiente; // O(1)
@@ -97,7 +97,7 @@ int Route::getClienteFinalId() const { return this->_ultimo->anterior->id; } // 
 int Route::getDemandaTotal() const { return this->_demandaTotal; } // O(1)
 int Route::getCapacidadRestante() const { return this->_capacidad - this->_demandaTotal; } // O(1)
 double Route::getDistanciaTotal() const { return this->_distanciaTotal; } // O(1)
-NodoCliente* Route::getRaiz() { return this->_raiz; } // O(1)
-NodoCliente* Route::getUltimo() { return this->_ultimo; } // O(1)
-const NodoCliente* Route::getRaizSinMod() const { return this->_raiz; } // O(1)
-const NodoCliente* Route::getUltimoSinMod() const { return this->_ultimo; } // O(!)
+NodeRoute* Route::getRaiz() { return this->_raiz; } // O(1)
+NodeRoute* Route::getUltimo() { return this->_ultimo; } // O(1)
+const NodeRoute* Route::getRaizSinMod() const { return this->_raiz; } // O(1)
+const NodeRoute* Route::getUltimoSinMod() const { return this->_ultimo; } // O(!)

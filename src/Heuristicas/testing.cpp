@@ -12,7 +12,7 @@ void imprimirSolucion(const vector<Route>& solucion) {
     double distanciaTotalGlobal = 0.0;
     for (const auto& ruta: solucion) {
         cout << "Ruta " << id++ << ": ";
-        const NodoCliente* actual = ruta.getRaizSinMod();
+        const NodeRoute* actual = ruta.getRaizSinMod();
         while (actual != nullptr) {
             cout << actual->id << " ";
             actual = actual->siguiente;
@@ -44,7 +44,7 @@ void imprimirMatriz(const vector<vector<int>>& matriz) {
 double recalcularDistanciaTotal(const vector<Route>& solucion, const vector<vector<double>>& distancias) {
     double total = 0.0;
     for (const auto& ruta : solucion) {
-        const NodoCliente* actual = ruta.getRaizSinMod();
+        const NodeRoute* actual = ruta.getRaizSinMod();
         while (actual && actual->siguiente) {
             total += distancias[actual->id][actual->siguiente->id];
             actual = actual->siguiente;
@@ -54,7 +54,7 @@ double recalcularDistanciaTotal(const vector<Route>& solucion, const vector<vect
 }
 
 int main() {
-    Heuristicas heuristicas("instancias/2l-cvrp-0/E200-17c.dat");
+    Heuristicas heuristicas("instancias/2l-cvrp-0/E045-04f.dat");
     //int depotId = heuristicas.getInstancia().getDepotId();
     vector<vector<double>> distancias = heuristicas.getInstancia().getDistanceMatrix();
     vector<Node> clientes = heuristicas.getInstancia().getNodes();
@@ -76,7 +76,7 @@ int main() {
 
     cout << "Solución óptima utilizando VecinosMasCercanos" << endl;
     auto start2 = high_resolution_clock::now();
-    vector<Route> solucion2 = heuristicas.vecinoMasCercano();
+    vector<Route> solucion2 = heuristicas.nearestNeighbor();
     auto end2 = high_resolution_clock::now();
     imprimirSolucion(solucion2);
     auto duracion2_us = duration_cast<microseconds>(end2 - start2).count();
