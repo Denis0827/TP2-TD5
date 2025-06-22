@@ -146,7 +146,7 @@ vector<Route> Heuristicas::clarkeWright() {
 
     // Si k = 0, significa que no hay restricción de vehículos
     if (k != 0 && static_cast<int>(solucion.size()) > k) {
-        return {}; // si la cantidad de vehículos en la solución sobrepasa el límite de vehículos, no existe sol óptima
+        return solucion; // si la cantidad de vehículos en la solución sobrepasa el límite de vehículos, no existe sol óptima
     } else {
         return solucion;
     }
