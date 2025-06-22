@@ -100,6 +100,15 @@ vector<Route> Heuristicas::clarkeWright() {
     }
     // Complejidad total del ciclo: O(N)
 
+    int paso = 0; // Contador de pasos para los CSV
+
+    // Exporta el estado inicial (todas las rutas individuales)
+    {
+        std::vector<Route> rutas_iniciales;
+        for (const auto& par : rutaCliente) rutas_iniciales.push_back(par.second);
+        exportarRutasPaso(rutas_iniciales, this->_instancia.getNodes(), paso++);
+    }
+
     for (int s = 0; s < static_cast<int>(savings.size()); s++) { // O(N^2) recorre los savings desde el mayor al menor
         int i = savings[s].i; // O(1)
         int j = savings[s].j; // O(1)
@@ -134,6 +143,11 @@ vector<Route> Heuristicas::clarkeWright() {
                 }
                 // la otra ruta la borramos
                 rutaCliente.erase(cliente_borrar); // O(1) en promedio, teniendo en cuenta que solo existe un valor con esa clave
+
+                // <<<<<<<< EXPORTA EL ESTADO ACTUAL DESPUÉS DE CADA UNIÓN EXITOSA >>>>>>>>
+                std::vector<Route> rutas_actuales;
+                for (const auto& par : rutaCliente) rutas_actuales.push_back(par.second);
+                exportarRutasPaso(rutas_actuales, this->_instancia.getNodes(), paso++);            
             } 
         } 
     }
