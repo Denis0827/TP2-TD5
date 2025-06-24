@@ -3,6 +3,7 @@
 
 #include "NodeRoute.h"
 #include <iostream>
+#include <vector>
 using namespace std;
 
 class Route {
@@ -20,6 +21,7 @@ class Route {
         int getClientePadreId() const; // O(1)
         int getClienteFinalId() const; // O(1)
         int getDemandaTotal() const; // O(1)
+        int getCapacidadTotal() const; // O(1)
         int getCapacidadRestante() const; // O(1)
         double getDistanciaTotal() const; // O(1)
 
@@ -34,6 +36,8 @@ class Route {
         void agregarClienteInicio(int id, int demanda, double dist_depi, double dist_ij = 0.0, double dist_depj = 0.0); // O(1)
         void agregarClienteFinal(int id, int demanda, double dist_depi, double dist_ij = 0.0, double dist_depj = 0.0); // O(1)
         void unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double dis_depj); // O(1)
+        // chequear dist_ij
+        void swapNodes(Route& otraRuta, NodeRoute* nodoA, NodeRoute* nodoB, const vector<vector<double>>& distancias); 
         void imprimirRuta() const; // O(N)
         void setDemandaTotal(int nuevaDemanda); //NUEVO
 

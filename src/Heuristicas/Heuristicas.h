@@ -32,6 +32,7 @@ class Heuristicas {
         vector<Route> swap(const vector<Route>& solucion_inicial);
 };
 
+/*
 void exportarRutasPaso(const std::vector<Route>& solucion, const std::vector<Node>& nodos, int paso) {
     std::ostringstream filename;
     filename << "rutas_" << std::setw(3) << std::setfill('0') << paso << ".csv";
@@ -55,5 +56,6 @@ void exportarRutasPaso(const std::vector<Route>& solucion, const std::vector<Nod
     }
     out.close();
 }
+    */
 
 #endif // HEURISTICAS_H

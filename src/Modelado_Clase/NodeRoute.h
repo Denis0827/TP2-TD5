@@ -3,6 +3,7 @@
 
 struct NodeRoute {
     int id;
+    int demanda;
     NodeRoute* anterior;
     NodeRoute* siguiente;
 };

@@ -106,7 +106,7 @@ vector<Route> Heuristicas::clarkeWright() {
     {
         std::vector<Route> rutas_iniciales;
         for (const auto& par : rutaCliente) rutas_iniciales.push_back(par.second);
-        exportarRutasPaso(rutas_iniciales, this->_instancia.getNodes(), paso++);
+        //exportarRutasPaso(rutas_iniciales, this->_instancia.getNodes(), paso++);
     }
 
     for (int s = 0; s < static_cast<int>(savings.size()); s++) { // O(N^2) recorre los savings desde el mayor al menor
@@ -147,7 +147,7 @@ vector<Route> Heuristicas::clarkeWright() {
                 // <<<<<<<< EXPORTA EL ESTADO ACTUAL DESPUÉS DE CADA UNIÓN EXITOSA >>>>>>>>
                 std::vector<Route> rutas_actuales;
                 for (const auto& par : rutaCliente) rutas_actuales.push_back(par.second);
-                exportarRutasPaso(rutas_actuales, this->_instancia.getNodes(), paso++);            
+                //exportarRutasPaso(rutas_actuales, this->_instancia.getNodes(), paso++);            
             } 
         } 
     }

@@ -173,6 +173,8 @@ bool swap_clientes(vector<Route>& rutas, const vector<vector<double>>& distancia
                         }
                     }
 
+                    // si estamos en la misma ruta nunca nos pasariamos de la capacidad
+
                     if (swapValido) {
                         // Calcular costo antes del swap
                         double costoAntes = 0.0;

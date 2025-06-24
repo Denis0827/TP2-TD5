@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -I./src/Modelado_Clase -I./src/Heuristicas
 
-SRC = src/Heuristicas/testing.cpp \
+SRC = src/Heuristicas/testing_rutas.cpp \
       src/Heuristicas/InitHeuristicas.cpp \
       src/Heuristicas/ClarkeWright.cpp \
 	src/Heuristicas/NearestNeighbor.cpp \
