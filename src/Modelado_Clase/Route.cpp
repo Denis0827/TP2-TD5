@@ -90,6 +90,10 @@ void Route::imprimirRuta() const {
               << endl; // O(1)
 }
 
+void Route::setDemandaTotal(int nuevaDemanda) {
+    this->_demandaTotal = nuevaDemanda;
+}
+
 // --- Getter Implementations ---
 
 int Route::getClientePadreId() const { return this->_raiz->siguiente->id; } // O(1)

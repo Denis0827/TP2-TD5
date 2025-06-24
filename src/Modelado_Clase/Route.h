@@ -35,6 +35,8 @@ class Route {
         void agregarClienteFinal(int id, int demanda, double dist_depi, double dist_ij = 0.0, double dist_depj = 0.0); // O(1)
         void unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double dis_depj); // O(1)
         void imprimirRuta() const; // O(N)
+        void setDemandaTotal(int nuevaDemanda); //NUEVO
+
 };
 
 #endif // ROUTE_H
