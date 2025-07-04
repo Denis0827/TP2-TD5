@@ -57,7 +57,7 @@ vector<Route> Heuristicas::relocate(const vector<Route>& solucion_inicial) {
 
 void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix();
-    const vector<int>& demandas = this->_instancia.getDemandas();
+    const vector<int>& demandas = this->_instancia.getDemands();
     const vector<tuple<int, Route*>>& rutas = solucion.getRutas();
     const vector<tuple<NodeRoute*, Route*>>& clientes_a_visitar = solucion.getAllClientesSol();
 

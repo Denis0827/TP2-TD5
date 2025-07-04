@@ -1,40 +1,18 @@
 #ifndef TESTING_H
 #define TESTING_H
 
-#include "VRPLIBReader.h"
-#include "Route.h"
-#include <string>
+#include "../Modelado_Clase/Route.h"
+#include "../Modelado_Clase/Solution.h"
 
-#include <fstream>
-#include <iomanip>
-#include <sstream>
-
-class Solution {
-    private: 
-        vector<tuple<int, Route*>> _rutas; // guarda punteros a rutas
-        int _cantidad_rutas;
-        int _cantidad_camiones;
-        int _ultimo_id;
-        string _algoritmo;
-        string _instanciaCVRP;
-
+class Testing {
     public:
-        Solution();
-        Solution(int cantidad_camiones, string algoritmo, string instancia);
+        // Testing para la estructura de la class Route
+        void TEST_
 
-        int getCantidadRutas() const;
-        int getCantidadCamiones() const;
-        string getAlgoritmo() const;
-        vector<tuple<int, Route*>> getRutas() const;
-        vector<tuple<NodeRoute*, Route*>> getAllClientesSol() const;
+        // Testing para Swap
 
-        bool esFactible() const;
-        void setAlgoritmo(string algoritmo);
+        // Testing para Relocate
 
-        void agregarRuta(Route* ruta);
-
-        void imprimirSolution();
-        void exportarSolutionParcial(const vector<Node>& nodos, int numero_iteracion);
 };
 
 #endif // TESTING_H

@@ -1,5 +1,4 @@
 #include "Solution.h"
-#include <algorithm>
 
 Solution::Solution() {
     this->_rutas = {}; // O(1)

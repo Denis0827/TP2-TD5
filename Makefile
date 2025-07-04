@@ -6,6 +6,7 @@ SRC = src/Heuristicas/testing_relocate.cpp \
 	src/Heuristicas/NearestNeighbor.cpp \
       src/Heuristicas/Swap.cpp \
       src/Modelado_Clase/VRPLIBReader.cpp \
+      src/Heuristicas/Relocate.cpp \
       src/Modelado_Clase/Route.cpp \
       src/Modelado_Clase/Solution.cpp
 
