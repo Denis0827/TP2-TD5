@@ -16,7 +16,7 @@ class Route {
 
     public: 
         Route(); // O(1)
-        Route(int capacidad); // O(1)
+        Route(int capacidad, int depot); // O(1)
 
         int getClientePadreId() const; // O(1)
         int getClienteFinalId() const; // O(1)
@@ -25,21 +25,26 @@ class Route {
         int getCapacidadRestante() const; // O(1)
         double getDistanciaTotal() const; // O(1)
 
-        NodeRoute* getRaiz(); // O(1)
-        NodeRoute* getUltimo(); // O(1)
-        const NodeRoute* getRaizSinMod() const; // O(1)
-        const NodeRoute* getUltimoSinMod() const; // O(1)
+        const NodeRoute* getRaiz() const; // O(1)
+        const NodeRoute* getUltimo() const; // O(1)
+        NodeRoute* getRaizModify(); // O(1)
+        NodeRoute* getUltimoModify(); // O(1)
+        // OJO con los usos inapropiados de getModify porque afectan el encapsulamiento y pueden dañar la estructura
+        // interna de Route si no se usa de manera adecuada
 
-        void agregarDepot(int depot); // O(1)
-        // Por default, iniciaizamos dist_ij y dist_depj en 0.0 porque es el caso borde donde agregamos cliente
-        // a una ruta donde no hay todavía ningún cliente (solo tenemos a los 2 depot)
+        // Por default, iniciaizamos dist_ij y dist_depj en 0.0 porque es el caso borde donde agregamos 
+        // cliente a una ruta donde no hay todavía ningún cliente (solo tenemos a los 2 depot)
         void agregarClienteInicio(int id, int demanda, double dist_depi, double dist_ij = 0.0, double dist_depj = 0.0); // O(1)
         void agregarClienteFinal(int id, int demanda, double dist_depi, double dist_ij = 0.0, double dist_depj = 0.0); // O(1)
+        // j es el nuevo cliente, i es el anterior primero/ultimo
+
         void unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double dis_depj); // O(1)
         // chequear dist_ij
-        void swapNodes(Route& otraRuta, NodeRoute* nodoA, NodeRoute* nodoB, const vector<vector<double>>& distancias); 
+        bool swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, const vector<vector<double>>& distancias); // O(1)
+        // Pre: i debe ser cliente de la ruta actual, j debe ser cliente de otraRuta
+        //void relocateCliente();
+
         void imprimirRuta() const; // O(N)
-        void setDemandaTotal(int nuevaDemanda); //NUEVO
 
 };
 

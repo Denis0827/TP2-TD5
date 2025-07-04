@@ -49,3 +49,5 @@ vector<Route> Heuristicas::relocate(const vector<Route>& solucion_inicial) {
 
     }
 }
+
+

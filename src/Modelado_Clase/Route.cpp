@@ -8,15 +8,12 @@ Route::Route() {
     this->_distanciaTotal = 0; // O(1)
 }
 
-Route::Route(int capacidad) {
-    this->_raiz = nullptr; // O(1)
-    this->_ultimo = nullptr; // O(1)
+Route::Route(int capacidad, int depot) {
     this->_demandaTotal = 0; // O(1)
     this->_capacidad = capacidad; // O(1)
     this->_distanciaTotal = 0; // O(1)
-}
 
-void Route::agregarDepot(int depot) {
+    // Agregamos el depot
     this->_raiz = new NodeRoute{depot, 0, nullptr, nullptr}; // O(1)
     this->_ultimo = new NodeRoute{depot, 0, this->_raiz, nullptr}; // O(1)
     this->_raiz->siguiente = this->_ultimo; // O(1)
@@ -77,15 +74,19 @@ void Route::unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double 
     this->_distanciaTotal += otraRuta._distanciaTotal + dist_ij - dist_depi - dis_depj; // O(1)
 }
 
-void Route::swapNodes(Route& otraRuta, NodeRoute* nodoA, NodeRoute* nodoB, const vector<vector<double>>& distancias) {
-    bool excede_capacidad = false;
-    int demandaA = nodoA->demanda;
-    int demandaB = nodoB->demanda;
+bool Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, const vector<vector<double>>& distancias) {
+    // Inicialización de variables
+    int demandaA = clienteA->demanda;
+    int demandaB = clienteB->demanda;
+    double costo_anterior_A, costo_anterior_B, costo_nuevo_A, costo_nuevo_B;
 
-    // si las rutas no tienen el mismo primer cliente, entonces son distintas rutas
-    // chequeo si el swap es valido, es decir, si cambiar el cliente de ruta no me
-    // rompe la capacidad
-    if (this->_raiz->siguiente->id != otraRuta._raiz->siguiente->id) {
+    bool misma_ruta = this->_raiz->siguiente->id == otraRuta._raiz->siguiente->id; // si las rutas no tienen el mismo primer cliente, entonces son distintas rutas
+    bool excede_capacidad = false;
+
+    // si los nodos estan en la misma ruta, no habria conflicto de capacidad al swapear
+    // pero si estan en distintas rutas, debo chequear si el swap es valido, es decir, 
+    // si cambiar el cliente de ruta no me rompe la capacidad
+    if (!misma_ruta) {
         int nuevaDemandaA = this->_demandaTotal - demandaA + demandaB;
         int nuevaDemandaB = otraRuta.getDemandaTotal() - demandaB + demandaA;
 
@@ -93,67 +94,150 @@ void Route::swapNodes(Route& otraRuta, NodeRoute* nodoA, NodeRoute* nodoB, const
             excede_capacidad = true;
         }
     }
+    
+    if (!excede_capacidad) { // ahora me asegure que no me rompe la capacidad en ningun caso
+        int cliente_anterior_A = clienteA->anterior->id;
+        int cliente_siguiente_A = clienteA->siguiente->id;
+        int cliente_anterior_B = clienteB->anterior->id;
+        int cliente_siguiente_B = clienteB->siguiente->id;
 
-    double costo_anterior_A = 0.0;
-    double costo_anterior_B = 0.0;
-    double costo_nuevo_A = 0.0;
-    double costo_nuevo_B = 0.0;
+        // Ejemplo ilustrativo A - misma ruta no consecutivos
+        // Ruta antes: 0 1 2 3 4 5 0 (swap 2,4)
+        // Ruta despues: 0 1 4 3 2 5 0
+        // Costo anterior: 1->2 + 2->3 + 3->4 + 4->5
+        // Costo nuevo: 1->4 + 4->3 + 3->2 + 2->5
 
-    // si los nodos estan en la misma ruta, no habria conflicto de capacidad al swapear
-    if (!excede_capacidad) {
-        int cliente_anterior_A = nodoA->anterior->id;
-        int cliente_siguiente_A = nodoA->siguiente->id;
-        int cliente_anterior_B = nodoB->anterior->id;
-        int cliente_siguiente_B = nodoB->siguiente->id;
+        // Ejemplo ilustrativo B - distintas rutas
+        // Rutas antes: (0 1 2 3 0) (0 4 5 6 0) (swap 2,5)
+        // Ruta despues: (0 1 5 3 0) (0 4 2 6 0)
+        // Costo anterior: 1->2 + 2->3 + 4->5 + 5->6
+        // Costo nuevo: 1->5 + 5->3 + 4->2 + 2->6
 
-        costo_anterior_A = distancias[cliente_anterior_A][nodoA->id] + 
-                        distancias[nodoA->id][cliente_siguiente_A]; 
-        costo_anterior_B = distancias[cliente_anterior_B][nodoB->id] +
-                        distancias[nodoB->id][cliente_siguiente_B];
+        // Podemos ver que en los casos de ejemplos A y B buscamos hacer la misma verificacion y asignacion
 
-        if (nodoA->siguiente != nodoB) {
-            costo_nuevo_A = distancias[cliente_anterior_A][nodoB->id] +
-                        distancias[nodoB->id][nodoA->id];
-            costo_nuevo_B = distancias[nodoB->id][nodoA->id] +
-                        distancias[nodoA->id][cliente_anterior_B];
-        } else {
-            costo_nuevo_A = distancias[nodoA->id][nodoB->id] +
-                    distancias[nodoA->id][cliente_siguiente_B];
-            costo_nuevo_B = distancias[cliente_anterior_A][nodoB->id] + 
-                    distancias[nodoB->id][nodoA->id];
+        // Ejemplo ilustrativo C - misma ruta consecutivos
+        // Ruta antes: 0 1 2 3 4 0 (swap 2,3)
+        // Ruta despues: 0 1 3 2 4 0
+        // Costo anterior: 1->2 + 2->3 + 2->3 + 3->4
+        // Costo nuevo: 1->3 + 3-> 2 + 3->2 + 2->4 (notar que 2->3 es igual a 3->2)
+
+        costo_anterior_A = distancias[cliente_anterior_A][clienteA->id] + distancias[clienteA->id][cliente_siguiente_A];
+        costo_anterior_B = distancias[cliente_anterior_B][clienteB->id] + distancias[clienteB->id][cliente_siguiente_B];
+
+        if (clienteA->siguiente != clienteB) { // nodos no consecutivos
+            costo_nuevo_A = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][cliente_siguiente_A];
+            costo_nuevo_B = distancias[cliente_siguiente_B][clienteA->id] + distancias[clienteA->id][cliente_anterior_B];
+        } else { // nodos consecutivos
+            costo_nuevo_A = distancias[clienteA->id][clienteB->id] + distancias[clienteA->id][cliente_siguiente_B];
+            costo_nuevo_B = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][clienteA->id];
         }
     }
 
-    if (costo_nuevo_A + costo_nuevo_B < costo_anterior_A + costo_anterior_B) {
-        NodeRoute* nodoA_anterior = nodoA->anterior;
-        NodeRoute* nodoA_siguiente = nodoA->siguiente;
-        NodeRoute* nodoB_anterior = nodoB->anterior;
-        NodeRoute* nodoB_siguiente = nodoB->siguiente;
+    // Chequeo si hay alguna mejora de costo y realizo el swap
+    if (!excede_capacidad && costo_nuevo_A + costo_nuevo_B < costo_anterior_A + costo_anterior_B) {
+        NodeRoute* clienteA_anterior = clienteA->anterior;
+        NodeRoute* clienteA_siguiente = clienteA->siguiente;
+        NodeRoute* clienteB_anterior = clienteB->anterior;
+        NodeRoute* clienteB_siguiente = clienteB->siguiente;
 
-        if (nodoA->siguiente != nodoB) {
-            nodoA->anterior = nodoB->anterior;
-            nodoA->siguiente = nodoB->siguiente;
-            nodoB->anterior = nodoA_anterior;
-            nodoB->siguiente = nodoA_siguiente;
-        } else {
-            nodoA_anterior->siguiente = nodoB;
-            nodoB_siguiente->anterior = nodoA;
-            nodoA->anterior = nodoB;
-            nodoA->siguiente = nodoB_siguiente;
-            nodoB->anterior = nodoA_anterior;
-            nodoB->siguiente = nodoA;
+        // Realizamos el swap, teniendo cuidado con los enlaces entre clientes y tomando como guía los ejemplos
+        // ilustrativos mostrados arriba
+        if (clienteA->siguiente != clienteB) { // caso NO consecutivos
+            clienteA->anterior = clienteB->anterior;
+            clienteA->siguiente = clienteB->siguiente;
+            clienteB->anterior = clienteA_anterior;
+            clienteB->siguiente = clienteA_siguiente;
+            
+            clienteA_anterior->siguiente = clienteB;
+            clienteA_siguiente->anterior = clienteB;
+            clienteB_anterior->siguiente = clienteA;
+            clienteB_siguiente->anterior = clienteA;
+        } else { // caso SI consecutivos
+            clienteA->anterior = clienteB;
+            clienteA->siguiente = clienteB_siguiente;
+            clienteB->anterior = clienteA_anterior;
+            clienteB->siguiente = clienteA;
+
+            clienteA_anterior->siguiente = clienteB;
+            clienteB_siguiente->anterior = clienteA;
         }
 
-        this->_demandaTotal += demandaB - demandaA; 
+        this->_demandaTotal += demandaB - demandaA;
         otraRuta._demandaTotal += demandaA - demandaB;
-        this->_distanciaTotal += costo_nuevo_A - costo_anterior_A;
-        otraRuta._distanciaTotal += costo_nuevo_B - costo_anterior_B;
+        // si fuesen la misma ruta se cancela la suma
+
+        if (misma_ruta) {
+            this->_distanciaTotal += (costo_nuevo_A + costo_nuevo_B) - (costo_anterior_A + costo_anterior_B);
+        } else {
+            this->_distanciaTotal += costo_nuevo_A - costo_anterior_A;
+            otraRuta._distanciaTotal += costo_nuevo_B - costo_anterior_B;
+        }
+        return true;
+    } else {
+        return false;
     }
 }
 
+/*
+bool relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const std::vector<int>& demandas, const vector<vector<double>>& distancia ) {
+    // entrada: dos rutas. un arco jk (donde voy a insertar el nodo) y dos nodos p y q
+    // idea: me fijo q j!= p y k!=q. 
+
+    int id_i = cliente->id;
+    int id_p = cliente->anterior->id;
+    int id_q = cliente->siguiente->id;
+    int id_j = destinoPrev->id;
+    int id_k = destinoNext->id;
+
+    NodeRoute* destinoNext = destinoPrev -> id;
+    double costo_actual = distancia[id_p][id_i] + distancia[id_i][id_q] + distancia[id_j][id_k];
+    double costo_nuevo = distancia[id_p][id_q] + distancia[id_j][id_i] + distancia[id_i][id_k];
+
+    int demanda_i = demandas[id_i];
+
+
+    //chequeo que no se pase de la capacidad si es que son rutas distintas
+    if(this != &otraRuta){
+        int nueva_demanda_destino = otraRuta._demandaTotal + demanda_i;
+        if (nueva_demanda_destino >otraRuta._capacidad)
+            return false; // no es factible
+    }
+
+    // si mejora el costo, aplicamos el cambio
+    if (costo_nuevo < costo_actual){
+        // saco a  i   y conecto p -> q
+        cliente -> anterior -> siguiente = cliente -> siguiente;
+        cliente -> siguiente -> anterior = cliente -> anterior;
+
+        // lo inserto entre k  y  j
+        cliente -> anterior = destinoPrev;
+        cliente -> siguiente = destinoNext;
+        destinoPrev -> siguiente = cliente;
+        destinoNext -> anterior = cliente;
+
+        // actualizo demanda y distancias (individuales por ruta) si las rutas son distintas. (si estoy en la misma ruta la demanda queda igual)
+        if (this != otraRuta){
+            this -> _demandaTotal -= demanda_i;
+            otraRuta._demandaTotal += demanda_i;
+
+            this -> _distanciaTotal += distancia[id_p][id_q] - distancias[id_p][id_i] - distancias[id_i][id_q];  
+            otraRuta._distanciaTotal += distancia[id_j][id_i] + distancias[id_i][id_k] - distancias[id_j][id_k];  
+        } 
+
+        //si es la misma ruta actualizo solo la distancia
+        else{
+            this -> _distanciaTotal += costo_nuevo - costo_actual;
+        }
+
+        return true;
+    } 
+    return false;
+}
+*/
+
 void Route::imprimirRuta() const {
     cout << "Ruta: "; // O(1)
-    const NodeRoute* actual = this->getRaizSinMod(); // O(1)
+    const NodeRoute* actual = this->getRaiz(); // O(1)
     while (actual != nullptr) { // O(N)
         cout << actual->id << " "; // O(1)
         actual = actual->siguiente; // O(1)
@@ -164,12 +248,6 @@ void Route::imprimirRuta() const {
               << endl; // O(1)
 }
 
-
-
-void Route::setDemandaTotal(int nuevaDemanda) {
-    this->_demandaTotal = nuevaDemanda;
-}
-
 // --- Getter Implementations ---
 
 int Route::getClientePadreId() const { return this->_raiz->siguiente->id; } // O(1)
@@ -178,7 +256,7 @@ int Route::getDemandaTotal() const { return this->_demandaTotal; } // O(1)
 int Route::getCapacidadTotal() const { return this->_capacidad; } // O(1)
 int Route::getCapacidadRestante() const { return this->_capacidad - this->_demandaTotal; } // O(1)
 double Route::getDistanciaTotal() const { return this->_distanciaTotal; } // O(1)
-NodeRoute* Route::getRaiz() { return this->_raiz; } // O(1)
-NodeRoute* Route::getUltimo() { return this->_ultimo; } // O(1)
-const NodeRoute* Route::getRaizSinMod() const { return this->_raiz; } // O(1)
-const NodeRoute* Route::getUltimoSinMod() const { return this->_ultimo; } // O(!)
+const NodeRoute* Route::getRaiz() const { return this->_raiz; } // O(1)
+const NodeRoute* Route::getUltimo() const { return this->_ultimo; } // O(1)
+NodeRoute* Route::getRaizModify() { return this->_raiz; } // O(1)
+NodeRoute* Route::getUltimoModify() { return this->_ultimo; } // O(1)

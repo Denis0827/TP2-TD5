@@ -42,15 +42,13 @@ int clienteMinimoDistancia(const vector<double>& distanciasCliente, int id, cons
 }
 // Complejidad total: O(N)
 
-vector<Route> Heuristicas::nearestNeighbor() {
+Solution Heuristicas::nearestNeighbor() {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix(); // O(1)
     const vector<int>& demandas = this->_instancia.getDemands(); // O(1)
     int depot = this->_instancia.getDepotId(); // O(1)
     int capacidad = this->_instancia.getCapacity(); // O(1)
     int n = this->_instancia.getDimension(); // O(1)
     int k = this->_instancia.getNumVehicles(); // O(1)
-
-    vector<Route> solucion; // O(1)
 
     vector<int> clientes_depot_ordenados = ordenarPorDistancias(distancias[depot]); // O(N*logN)
 
@@ -60,6 +58,8 @@ vector<Route> Heuristicas::nearestNeighbor() {
     visitados[depot] = 1; // O(1) no queremos considerar el depot, solo clientes
 
     int paso = 0;
+    Solution solucion = Solution(k, "NearestNeighbor");
+
     // empiezo del depot, veo el nodo con min distancia y agregarlo a la ruta
     while (clientes_no_visitados > 0) { 
         // busco en el vector de distancias del depot cuál es el primero que no fue visitado todavía
@@ -74,9 +74,8 @@ vector<Route> Heuristicas::nearestNeighbor() {
         }
         // Complejidad total del ciclo: O(N)
 
-        Route rutaActual = Route(capacidad); // O(1) creamos la ruta nueva
-        rutaActual.agregarDepot(depot); // O(1)
-        rutaActual.agregarClienteInicio(primer_cliente_sin_ruta, demandas[primer_cliente_sin_ruta],
+        Route* rutaActual = new Route(capacidad, depot); // O(1) creamos la ruta nueva
+        rutaActual->agregarClienteInicio(primer_cliente_sin_ruta, demandas[primer_cliente_sin_ruta],
             distancias[depot][primer_cliente_sin_ruta]); // O(1) agregamos el cliente encontrado
 
         int actual = primer_cliente_sin_ruta; // O(1)
@@ -84,38 +83,32 @@ vector<Route> Heuristicas::nearestNeighbor() {
 
         while (puedeAgregar != false) { // O(1)
             int candidato = clienteMinimoDistancia(distancias[actual], actual, visitados, demandas, 
-                rutaActual.getCapacidadRestante()); // O(N) 
+                rutaActual->getCapacidadRestante()); // O(N) 
             
             if (candidato != -1) { // O(1) solo entro si existe candidato, es decir si existe minimo que cumple la factibilidad
                 // agregamos el candidato a la ruta
-                rutaActual.agregarClienteFinal(candidato, demandas[candidato], distancias[actual][depot], distancias[actual][candidato], 
+                rutaActual->agregarClienteFinal(candidato, demandas[candidato], distancias[actual][depot], distancias[actual][candidato], 
                     distancias[candidato][depot]); // O(1)
 
                 visitados[candidato] = 1; // O(1) ya visité entonces el candidato
                 actual = candidato; // O(1) ahora busco el minimo cliente desde el candidato (candidato del candidato)
                 clientes_no_visitados--; // O(1)
 
-                vector<Route> parcial = solucion;
-                parcial.push_back(rutaActual);
+                //Solution parcial = solucion;
+                //parcial.push_back(rutaActual);
                 //exportarRutasPaso(parcial, this->_instancia.getNodes(), paso++);
             } else {
                 puedeAgregar = false; // O(1) si no encontré ningun candidato, la ruta esta hecha
             }
             
         }
-        solucion.push_back(rutaActual); // O(1) agrego ruta a la solucion
+        solucion.agregarRuta(rutaActual); // O(1) agrego ruta a la solucion
         //exportarRutasPaso(solucion, this->_instancia.getNodes(), paso++);
     }
+    return solucion;
     // Complejidad total del ciclo: O(N^2)
     // ¿Por qué? Cada cliente puede estar únicamente en una ruta, entonces visitaremos solo única vez a cada cliente
     // Para cada cliente, puede estar o al principio de la ruta (primer_cliente_sin_ruta) o en el medio (candidato)
     // Cada búsqueda respectiva se realiza en O(N), por lo que con N clientes tendríamos O(N^2)
-    
-    // Si k = 0, significa que no hay restricción de vehículos
-    if (k != 0 && static_cast<int>(solucion.size()) > k) {
-        return {}; // si la cantidad de vehículos en la solución sobrepasa el límite de vehículos, no existe sol óptima
-    } else {
-        return solucion;
-    }
 }
 // Complejidad total NearestNeighbor: O(N^2)

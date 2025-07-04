@@ -64,13 +64,13 @@ tuple<int, int> unionFind(vector<int>& padres_ruta, vector<int>& rango_cliente, 
 }
 // Complejidad total: O(α(n))
 
-bool chequeoSolapamiento(Route ruta_i, Route ruta_j, int i, int j) {
+bool chequeoSolapamiento(const Route& ruta_i, const Route& ruta_j, int i, int j) {
     return ruta_i.getClientePadreId() != ruta_j.getClientePadreId() && // O(1) si son iguales son la misma ruta
         ruta_i.getClienteFinalId() == i && ruta_j.getClientePadreId() == j; // O(1) solapamiento
 }
 // Complejidad total: O(1)
 
-vector<Route> Heuristicas::clarkeWright() {
+Solution Heuristicas::clarkeWright() {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix(); // O(1)
     const vector<int>& demandas = this->_instancia.getDemands(); // O(1)
     int depot = this->_instancia.getDepotId(); // O(1)
@@ -78,13 +78,12 @@ vector<Route> Heuristicas::clarkeWright() {
     int n = this->_instancia.getDimension(); // O(1)
     int k = this->_instancia.getNumVehicles(); // O(1)
 
-    unordered_map<int, Route> rutaCliente; // O(1)
+    unordered_map<int, Route*> rutaCliente; // O(1)
     
     for (int i = 1; i <= n; i++) { // O(N)
         if (i != depot) { // O(1)
-            Route ruta = Route(capacidad); // O(1)
-            ruta.agregarDepot(depot); // O(1)
-            ruta.agregarClienteInicio(i, demandas[i], distancias[depot][i]); // O(1)
+            Route* ruta = new Route(capacidad, depot); // O(1)
+            ruta->agregarClienteInicio(i, demandas[i], distancias[depot][i]); // O(1)
             rutaCliente[i] = ruta; // O(1) en promedio, teniendo en cuenta que las claves utilizan la función estándar de hash para int y están bien distribuidas {1, 2, 3, ... ,n}
         }
     }
@@ -105,7 +104,7 @@ vector<Route> Heuristicas::clarkeWright() {
     // Exporta el estado inicial (todas las rutas individuales)
     {
         std::vector<Route> rutas_iniciales;
-        for (const auto& par : rutaCliente) rutas_iniciales.push_back(par.second);
+        for (const auto& par : rutaCliente) rutas_iniciales.push_back(*par.second);
         //exportarRutasPaso(rutas_iniciales, this->_instancia.getNodes(), paso++);
     }
 
@@ -113,32 +112,32 @@ vector<Route> Heuristicas::clarkeWright() {
         int i = savings[s].i; // O(1)
         int j = savings[s].j; // O(1)
 
-        Route ruta_i = rutaCliente[findPadre(padres_ruta, i)]; // O(α(n) encuentra la ruta de la raiz
+        Route* ruta_i = rutaCliente[findPadre(padres_ruta, i)]; // O(α(n) encuentra la ruta de la raiz
         // acá aprovecha a actualizar los padres de la subruta para que apunten bien a la ruta que corresponde
-        Route ruta_j = rutaCliente[findPadre(padres_ruta, j)]; // O(α(n))
+        Route* ruta_j = rutaCliente[findPadre(padres_ruta, j)]; // O(α(n))
         bool solapado = true; // O(1)
         bool invertir = false; // O(1)
 
-        if (chequeoSolapamiento(ruta_i, ruta_j, i, j)) { // O(1)
+        if (chequeoSolapamiento(*ruta_i, *ruta_j, i, j)) { // O(1)
             solapado = false; // O(1)
-        } else if (chequeoSolapamiento(ruta_j, ruta_i, j, i)) { // O(1) chequeo si hay solapamiento invertido
+        } else if (chequeoSolapamiento(*ruta_j, *ruta_i, j, i)) { // O(1) chequeo si hay solapamiento invertido
             solapado = false; // O(1)
             invertir = true; // O(1)
         }
 
         if (!solapado) { // O(1)
-            int demandaAgregada = ruta_i.getDemandaTotal() + ruta_j.getDemandaTotal(); // O(1)
+            int demandaAgregada = ruta_i->getDemandaTotal() + ruta_j->getDemandaTotal(); // O(1)
             if (demandaAgregada <= capacidad) { // O(1) si la nueva demanda no supera la capacidad agregamos ruta_j a ruta_i
                 tuple<int, int> res_unionFind = unionFind(padres_ruta, rango_cliente, i, j); // O(α(n))
                 int cliente_padre = get<0>(res_unionFind); // O(1)
                 int cliente_borrar = get<1>(res_unionFind); // O(1)            
 
                 if (!invertir) { // O(1)
-                    ruta_i.unirRutas(ruta_j, distancias[i][j], distancias[depot][i], distancias[depot][j]); // O(1)
+                    ruta_i->unirRutas(*ruta_j, distancias[i][j], distancias[depot][i], distancias[depot][j]); // O(1)
                     // seteamos la ruta unida al cliente padre que debe tener la ruta
                     rutaCliente[cliente_padre] = ruta_i; // O(1) en promedio
                 } else { // lo mismo pero invertido
-                    ruta_j.unirRutas(ruta_i, distancias[i][j], distancias[depot][j], distancias[depot][i]); // O(1)
+                    ruta_j->unirRutas(*ruta_i, distancias[i][j], distancias[depot][j], distancias[depot][i]); // O(1)
                     rutaCliente[cliente_padre] = ruta_j; // O(1) en promedio
                 }
                 // la otra ruta la borramos
@@ -146,23 +145,18 @@ vector<Route> Heuristicas::clarkeWright() {
 
                 // <<<<<<<< EXPORTA EL ESTADO ACTUAL DESPUÉS DE CADA UNIÓN EXITOSA >>>>>>>>
                 std::vector<Route> rutas_actuales;
-                for (const auto& par : rutaCliente) rutas_actuales.push_back(par.second);
+                for (const auto& par : rutaCliente) rutas_actuales.push_back(*par.second);
                 //exportarRutasPaso(rutas_actuales, this->_instancia.getNodes(), paso++);            
             } 
         } 
     }
     // Complejidad total del ciclo: O(N^2) en promedio
     
-    vector<Route> solucion = {};
+    Solution solucion = Solution(k, "ClarkeWright");
     for (auto it = rutaCliente.begin(); it != rutaCliente.end(); ++it) {
-        solucion.push_back((it->second));
+        solucion.agregarRuta(it->second);
     }
 
-    // Si k = 0, significa que no hay restricción de vehículos
-    if (k != 0 && static_cast<int>(solucion.size()) > k) {
-        return solucion; // si la cantidad de vehículos en la solución sobrepasa el límite de vehículos, no existe sol óptima
-    } else {
-        return solucion;
-    }
+    return solucion;
 }
 // Complejidad total ClarkeWright: O(N^2*logN)
