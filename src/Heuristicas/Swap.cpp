@@ -9,11 +9,11 @@ void Heuristicas::swap(Solution& solucion) {
         NodeRoute* actualA = rutaA->getRaizModify()->siguiente;
 
         while (actualA != rutaA->getUltimo()) {
+            bool swap_valido = false;
 
             for (int j = 0; j < static_cast<int>(rutas.size()); j++) {
                 Route* rutaB = get<1>(rutas[j]);
                 NodeRoute* actualB = rutaB->getRaizModify()->siguiente;
-                bool swap_valido = false;
 
                 while (!swap_valido && actualB != rutaB->getUltimo()) {
                     if (actualA == actualB) {
@@ -21,7 +21,10 @@ void Heuristicas::swap(Solution& solucion) {
                     } else {
                         // first improvement
                         if (rutaA->swapClientes(*rutaB, actualA, actualB, distancias)) {
-                            cout << "Swap valido entre " << actualA->id << " y " << actualB->id << endl;
+                            //cout << "Swap valido entre " << actualA->id << " y " << actualB->id << endl;
+                            actualA = actualB->siguiente;
+                            solucion.imprimirSolution();
+                            cout << "==" << endl;
                             swap_valido = true;
                         } else {
                             actualB = actualB->siguiente;
@@ -32,7 +35,7 @@ void Heuristicas::swap(Solution& solucion) {
                 if (swap_valido) break;
             }
 
-            actualA = actualA->siguiente;
+            if (!swap_valido) actualA = actualA->siguiente;
         }
     }
 

@@ -147,7 +147,7 @@ bool Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* client
 
         // Realizamos el swap, teniendo cuidado con los enlaces entre clientes y tomando como guía los ejemplos
         // ilustrativos mostrados arriba
-        if (clienteA->siguiente != clienteB) { // caso NO consecutivos
+        if (clienteA->siguiente != clienteB && clienteB->siguiente != clienteA) { // caso NO consecutivos
             clienteA->anterior = clienteB->anterior;
             clienteA->siguiente = clienteB->siguiente;
             clienteB->anterior = clienteA_anterior;
@@ -158,13 +158,23 @@ bool Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* client
             clienteB_anterior->siguiente = clienteA;
             clienteB_siguiente->anterior = clienteA;
         } else { // caso SI consecutivos
-            clienteA->anterior = clienteB;
-            clienteA->siguiente = clienteB_siguiente;
-            clienteB->anterior = clienteA_anterior;
-            clienteB->siguiente = clienteA;
+            if (clienteA->siguiente == clienteB) {
+                clienteA->anterior = clienteB;
+                clienteA->siguiente = clienteB_siguiente;
+                clienteB->anterior = clienteA_anterior;
+                clienteB->siguiente = clienteA;
 
-            clienteA_anterior->siguiente = clienteB;
-            clienteB_siguiente->anterior = clienteA;
+                clienteA_anterior->siguiente = clienteB;
+                clienteB_siguiente->anterior = clienteA;
+            } else {
+                clienteA->anterior = clienteB_anterior;
+                clienteA->siguiente = clienteB;
+                clienteB->anterior = clienteA;
+                clienteB->siguiente = clienteA_siguiente;
+
+                clienteA_siguiente->anterior = clienteB;
+                clienteB_anterior->siguiente = clienteA;
+            }
         }
 
         this->_demandaTotal += demandaB - demandaA;
