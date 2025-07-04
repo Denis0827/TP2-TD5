@@ -20,12 +20,16 @@ bool Solution::esFactible() const {
     return this->_cantidad_rutas <= this->_cantidad_camiones;
 }
 
-vector<NodeRoute*> Solution::getAllClientesSolution() const {
-    vector<NodeRoute*> clientes;
+vector<tuple<NodeRoute*, Route*>> Solution::getAllClientesSol() const {
+    vector<tuple<NodeRoute*, Route*>> clientes;
     for (int i = 0; i < this->_cantidad_rutas; i++) {
         Route* ruta = get<1>(this->_rutas[i]);
-        vector<NodeRoute*> clientes_ruta = ruta->getAllClientes();
-        clientes.insert(clientes.end(), clientes_ruta.begin(), clientes_ruta.end());
+        // Recorremos los clientes de la ruta (excluyendo el depósito)
+        NodeRoute* actual = ruta->getRaizModify()->siguiente;
+        while (actual != ruta->getUltimo()) {
+            clientes.push_back(make_tuple(actual, ruta));
+            actual = actual->siguiente;
+        }
     }
     return clientes;
 }

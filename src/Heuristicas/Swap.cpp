@@ -79,7 +79,7 @@ double chequearMejora(Route& ruta_A, Route& ruta_B, NodeRoute* clienteA, NodeRou
 void Heuristicas::swap(Solution& solucion, int criterio) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix();
     const vector<tuple<int, Route*>>& rutas = solucion.getRutas();
-    const vector<NodeRoute*>& clientes_a_visitar = solucion.getAllClientesSolution();
+    const vector<tuple<NodeRoute*, Route*>>& clientes_a_visitar = solucion.getAllClientesSol();
 
     for (int i = 0; i < static_cast<int>(rutas.size()); i++) {
         Route* rutaA = get<1>(rutas[i]);

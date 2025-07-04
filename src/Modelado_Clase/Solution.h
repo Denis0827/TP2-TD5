@@ -12,7 +12,6 @@
 class Solution {
     private: 
         vector<tuple<int, Route*>> _rutas; // guarda punteros a rutas
-        vector<tuple<NodeRoute*, Route*>> _ruta_del_cliente;
         int _cantidad_rutas;
         int _cantidad_camiones;
         int _ultimo_id;
@@ -25,10 +24,10 @@ class Solution {
         int getCantidadRutas() const;
         int getCantidadCamiones() const;
         string getAlgoritmo() const;
-        bool esFactible() const;
         vector<tuple<int, Route*>> getRutas() const;
-        vector<NodeRoute*> getAllClientesSolution() const;
+        vector<tuple<NodeRoute*, Route*>> getAllClientesSol() const;
 
+        bool esFactible() const;
         void setAlgoritmo(string algoritmo);
 
         void agregarRuta(Route* ruta);
