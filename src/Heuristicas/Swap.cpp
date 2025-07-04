@@ -76,10 +76,22 @@ double chequearMejora(Route& ruta_A, Route& ruta_B, NodeRoute* clienteA, NodeRou
     }
 }
 
-void Heuristicas::swap(Solution& solucion, int criterio) {
+void Heuristicas::swap(Solution& solucion, int criterio, bool exportar) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix();
     const vector<tuple<int, Route*>>& rutas = solucion.getRutas();
     const vector<tuple<NodeRoute*, Route*>>& clientes_a_visitar = solucion.getAllClientesSol();
+    
+    string algoritmo_goloso = solucion.getAlgoritmo();
+    if (criterio == 0) {
+        solucion.setAlgoritmo(algoritmo_goloso + " + Swap (FirstImprovement)");
+    } else {
+        solucion.setAlgoritmo(algoritmo_goloso + " + Swap (BestImprovement)"); 
+    }
+    
+    int numero_iteracion = 0;
+    if (exportar) {
+        solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+    }
 
     for (int i = 0; i < static_cast<int>(clientes_a_visitar.size()); i++) {
         Route* rutaA = get<1>(clientes_a_visitar[i]);
@@ -109,6 +121,11 @@ void Heuristicas::swap(Solution& solucion, int criterio) {
                             //solucion.imprimirSolution();
                             //cout << "==" << endl;
                             swap_valido = true;
+
+                            if (exportar) {
+                                solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+                            }
+
                         } else {
                             actualB = actualB->siguiente;
                         }
@@ -140,10 +157,11 @@ void Heuristicas::swap(Solution& solucion, int criterio) {
                     costo_anterior_A, best_costo_anterior_B, best_costo_nuevo_A, best_costo_nuevo_B);
                 //solucion.imprimirSolution();
                 //cout << "==" << endl;
+
+                if (exportar) {
+                    solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+                }
             } 
         }
     }
-
-    string algoritmo_goloso = solucion.getAlgoritmo();
-    solucion.setAlgoritmo(algoritmo_goloso + " + Swap");
 }

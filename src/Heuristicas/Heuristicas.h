@@ -13,16 +13,18 @@
 class Heuristicas {
     private: 
         VRPLIBReader _instancia;
+        string _nombreInstancia;
 
     public:
         // inicializa _instancia usando el constructor adecuado
-        Heuristicas(const string& instanciaPath): _instancia(instanciaPath) {}
+        Heuristicas(const string& instanciaPath, const string& nombre)
+            : _instancia(instanciaPath), _nombreInstancia(nombre) {} // O(1)
         VRPLIBReader getInstancia() { return this->_instancia; } // O(1)
 
-        Solution clarkeWright(); // O(N^2*logN)
-        Solution nearestNeighbor(); // O(N^2)
+        Solution clarkeWright(bool exportar = false); // O(N^2*logN)
+        Solution nearestNeighbor(bool exportar = false); // O(N^2)
         void relocate(Solution& solucion);
-        void swap(Solution& solucion, int criterio); 
+        void swap(Solution& solucion, int criterio, bool exportar = false); 
         // criterio: 0 -> First Improvement, 1 -> Best Improvement
 };
 

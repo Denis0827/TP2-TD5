@@ -1,4 +1,4 @@
-#include "Heuristicas.h"
+/*#include "Heuristicas.h"
 
 vector<Route> Heuristicas::relocate(const vector<Route>& solucion_inicial) {
     vector<Route> solucion = solucion_inicial; 
@@ -49,5 +49,7 @@ vector<Route> Heuristicas::relocate(const vector<Route>& solucion_inicial) {
 
     }
 }
+
+*/
 
 

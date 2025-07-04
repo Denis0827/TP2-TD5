@@ -2,8 +2,12 @@
 #include <chrono>
 using namespace std::chrono;
 
-void resolverCVRP(string algoritmo, int criterio, string instancia) {
-    Heuristicas heuristicas(instancia);
+void resolverCVRP(string algoritmo, string instancia, bool exportar = false, string criterio = "") {
+    size_t slash_pos = instancia.find_last_of('/');
+    size_t dot_pos = instancia.find_last_of('.');
+    string nombre = instancia.substr(slash_pos + 1, dot_pos - slash_pos - 1);
+
+    Heuristicas heuristicas(instancia, nombre);
     cout << "Solución óptima utilizando " + algoritmo << endl;
     auto start = high_resolution_clock::now();
     
@@ -23,21 +27,21 @@ void resolverCVRP(string algoritmo, int criterio, string instancia) {
     };
 
     if (algoritmo == "ClarkeWright") {
-        solucion = heuristicas.clarkeWright();
+        solucion = heuristicas.clarkeWright(exportar);
     } else if (algoritmo == "NearestNeighbor") {
-        solucion = heuristicas.nearestNeighbor();
-    } else if (algoritmo == "ClarkeWright + Swap" && criterio == 0) {
+        solucion = heuristicas.nearestNeighbor(exportar);
+    } else if (algoritmo == "ClarkeWright + Swap" && criterio == "firstImprovement") {
         solucion = heuristicas.clarkeWright();
-        heuristicas.swap(solucion, 0);
-    } else if (algoritmo == "ClarkeWright + Swap" && criterio == 1) {
+        heuristicas.swap(solucion, 0, exportar);
+    } else if (algoritmo == "ClarkeWright + Swap" && criterio == "bestImprovement") {
         solucion = heuristicas.clarkeWright();
-        heuristicas.swap(solucion, 1);
-    } else if (algoritmo == "NearestNeighbor + Swap" && criterio == 0) {
+        heuristicas.swap(solucion, 1, exportar);
+    } else if (algoritmo == "NearestNeighbor + Swap" && criterio == "firstImprovement") {
         solucion = heuristicas.nearestNeighbor();
-        heuristicas.swap(solucion, 0);
-    } else if (algoritmo == "NearestNeighbor + Swap" && criterio == 1) {
+        heuristicas.swap(solucion, 0, exportar);
+    } else if (algoritmo == "NearestNeighbor + Swap" && criterio == "bestImprovement") {
         solucion = heuristicas.nearestNeighbor();
-        heuristicas.swap(solucion, 1);
+        heuristicas.swap(solucion, 1, exportar);
     }
 
     auto end = high_resolution_clock::now();
@@ -54,10 +58,11 @@ void resolverCVRP(string algoritmo, int criterio, string instancia) {
 }
 
 int main() {
-    //resolverCVRP("ClarkeWright", -1, "instancias/2l-cvrp-0/E200-17c.dat");
-    resolverCVRP("NearestNeighbor", -1, "instancias/2l-cvrp-0/E045-04f.dat");
-    //resolverCVRP("ClarkeWright + Swap", 1, "instancias/2l-cvrp-0/E200-17c.dat");
-    resolverCVRP("NearestNeighbor + Swap", 0, "instancias/2l-cvrp-0/E045-04f.dat");
-    resolverCVRP("NearestNeighbor + Swap", 1, "instancias/2l-cvrp-0/E045-04f.dat");
+    resolverCVRP("ClarkeWright", "instancias/2l-cvrp-0/E200-17c.dat", true);
+    resolverCVRP("NearestNeighbor", "instancias/2l-cvrp-0/E200-17c.dat", true);
+    resolverCVRP("ClarkeWright + Swap", "instancias/2l-cvrp-0/E200-17c.dat", true, "firstImprovement");
+    resolverCVRP("ClarkeWright + Swap", "instancias/2l-cvrp-0/E200-17c.dat", true, "bestImprovement");
+    resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E200-17c.dat", true, "firstImprovement");
+    resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E200-17c.dat", true, "bestImprovement");
     return 0;
 }

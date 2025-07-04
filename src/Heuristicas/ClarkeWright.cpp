@@ -70,7 +70,7 @@ bool chequeoSolapamiento(const Route& ruta_i, const Route& ruta_j, int i, int j)
 }
 // Complejidad total: O(1)
 
-Solution Heuristicas::clarkeWright() {
+Solution Heuristicas::clarkeWright(bool exportar) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix(); // O(1)
     const vector<int>& demandas = this->_instancia.getDemands(); // O(1)
     int depot = this->_instancia.getDepotId(); // O(1)
@@ -99,13 +99,16 @@ Solution Heuristicas::clarkeWright() {
     }
     // Complejidad total del ciclo: O(N)
 
-    int paso = 0; // Contador de pasos para los CSV
+    Solution solucion = Solution(k, "ClarkeWright", this->_nombreInstancia);
 
-    // Exporta el estado inicial (todas las rutas individuales)
-    {
-        std::vector<Route> rutas_iniciales;
-        for (const auto& par : rutaCliente) rutas_iniciales.push_back(*par.second);
-        //exportarRutasPaso(rutas_iniciales, this->_instancia.getNodes(), paso++);
+    int numero_iteracion = 0; // Contador de pasos para los CSV
+    if (exportar) {
+        // Exporta el estado inicial, con todas las rutas individuales
+        Solution parcial = solucion;
+        for (const auto& ruta : rutaCliente) {
+            parcial.agregarRuta(ruta.second);
+        }
+        parcial.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
     }
 
     for (int s = 0; s < static_cast<int>(savings.size()); s++) { // O(N^2) recorre los savings desde el mayor al menor
@@ -143,16 +146,19 @@ Solution Heuristicas::clarkeWright() {
                 // la otra ruta la borramos
                 rutaCliente.erase(cliente_borrar); // O(1) en promedio, teniendo en cuenta que solo existe un valor con esa clave
 
-                // <<<<<<<< EXPORTA EL ESTADO ACTUAL DESPUÉS DE CADA UNIÓN EXITOSA >>>>>>>>
-                std::vector<Route> rutas_actuales;
-                for (const auto& par : rutaCliente) rutas_actuales.push_back(*par.second);
-                //exportarRutasPaso(rutas_actuales, this->_instancia.getNodes(), paso++);            
+                if (exportar) {
+                    // exporta el estado actual después de cada unión exitosa
+                    Solution parcial = solucion;
+                    for (const auto& ruta : rutaCliente) {
+                        parcial.agregarRuta(ruta.second);
+                    }
+                    parcial.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+                }       
             } 
         } 
     }
     // Complejidad total del ciclo: O(N^2) en promedio
     
-    Solution solucion = Solution(k, "ClarkeWright");
     for (auto it = rutaCliente.begin(); it != rutaCliente.end(); ++it) {
         solucion.agregarRuta(it->second);
     }

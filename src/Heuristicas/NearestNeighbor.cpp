@@ -42,7 +42,7 @@ int clienteMinimoDistancia(const vector<double>& distanciasCliente, int id, cons
 }
 // Complejidad total: O(N)
 
-Solution Heuristicas::nearestNeighbor() {
+Solution Heuristicas::nearestNeighbor(bool exportar) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix(); // O(1)
     const vector<int>& demandas = this->_instancia.getDemands(); // O(1)
     int depot = this->_instancia.getDepotId(); // O(1)
@@ -57,8 +57,12 @@ Solution Heuristicas::nearestNeighbor() {
     vector<int> visitados (n + 1, 0); // O(N) cada i del vector es el cliente i
     visitados[depot] = 1; // O(1) no queremos considerar el depot, solo clientes
 
-    int paso = 0;
-    Solution solucion = Solution(k, "NearestNeighbor");
+    int numero_iteracion = 0;
+    Solution solucion = Solution(k, "NearestNeighbor", this->_nombreInstancia);
+
+    if (exportar) {
+        solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+    }
 
     // empiezo del depot, veo el nodo con min distancia y agregarlo a la ruta
     while (clientes_no_visitados > 0) { 
@@ -93,17 +97,22 @@ Solution Heuristicas::nearestNeighbor() {
                 visitados[candidato] = 1; // O(1) ya visité entonces el candidato
                 actual = candidato; // O(1) ahora busco el minimo cliente desde el candidato (candidato del candidato)
                 clientes_no_visitados--; // O(1)
+                
+                if (exportar) {
+                    Solution parcial = solucion;
+                    parcial.agregarRuta(rutaActual);
+                    parcial.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+                }
 
-                //Solution parcial = solucion;
-                //parcial.push_back(rutaActual);
-                //exportarRutasPaso(parcial, this->_instancia.getNodes(), paso++);
             } else {
                 puedeAgregar = false; // O(1) si no encontré ningun candidato, la ruta esta hecha
             }
             
         }
         solucion.agregarRuta(rutaActual); // O(1) agrego ruta a la solucion
-        //exportarRutasPaso(solucion, this->_instancia.getNodes(), paso++);
+        if (exportar) {
+            solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+        }
     }
     return solucion;
     // Complejidad total del ciclo: O(N^2)

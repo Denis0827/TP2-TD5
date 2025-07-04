@@ -16,10 +16,11 @@ class Solution {
         int _cantidad_camiones;
         int _ultimo_id;
         string _algoritmo;
+        string _instanciaCVRP;
 
     public:
         Solution();
-        Solution(int cantidad_camiones, string algoritmo);
+        Solution(int cantidad_camiones, string algoritmo, string instancia);
 
         int getCantidadRutas() const;
         int getCantidadCamiones() const;
