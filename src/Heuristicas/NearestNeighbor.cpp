@@ -68,7 +68,7 @@ Solution Heuristicas::nearestNeighbor(bool exportar) {
     while (clientes_no_visitados > 0) { 
         // busco en el vector de distancias del depot cuál es el primero que no fue visitado todavía
         int primer_cliente_sin_ruta = 0; // O(1)
-        for (int i = 1; i < static_cast<int>(n); i++) { // O(N)
+        for (int i = 1; i <= static_cast<int>(n); i++) { // O(N)
             if (visitados[clientes_depot_ordenados[i]] == 0) { // O(1)
                 primer_cliente_sin_ruta = clientes_depot_ordenados[i]; // O(1)
                 visitados[clientes_depot_ordenados[i]] = 1; // O(1)
@@ -76,8 +76,7 @@ Solution Heuristicas::nearestNeighbor(bool exportar) {
                 break; // si encontré el cliente salgo del ciclo, me quedo con el primero
             }
         }
-        // Complejidad total del ciclo: O(N)
-
+        
         Route* rutaActual = new Route(capacidad, depot); // O(1) creamos la ruta nueva
         rutaActual->agregarClienteInicio(primer_cliente_sin_ruta, demandas[primer_cliente_sin_ruta],
             distancias[depot][primer_cliente_sin_ruta]); // O(1) agregamos el cliente encontrado
@@ -110,6 +109,7 @@ Solution Heuristicas::nearestNeighbor(bool exportar) {
             
         }
         solucion.agregarRuta(rutaActual); // O(1) agrego ruta a la solucion
+
         if (exportar) {
             solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
         }
@@ -120,4 +120,5 @@ Solution Heuristicas::nearestNeighbor(bool exportar) {
     // Para cada cliente, puede estar o al principio de la ruta (primer_cliente_sin_ruta) o en el medio (candidato)
     // Cada búsqueda respectiva se realiza en O(N), por lo que con N clientes tendríamos O(N^2)
 }
+// Complejidad total NearestNeighbor: O(N^2)
 // Complejidad total NearestNeighbor: O(N^2)

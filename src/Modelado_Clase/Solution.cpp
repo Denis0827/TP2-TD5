@@ -1,7 +1,5 @@
 #include "Solution.h"
-#include <filesystem>
 #include <algorithm>
-#include <string>
 
 Solution::Solution() {
     this->_rutas = {}; // O(1)

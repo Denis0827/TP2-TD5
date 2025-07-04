@@ -53,3 +53,73 @@ vector<Route> Heuristicas::relocate(const vector<Route>& solucion_inicial) {
 */
 
 
+#include "Heuristicas.h"
+
+void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
+    const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix();
+    const vector<int>& demandas = this->_instancia.getDemandas();
+    const vector<tuple<int, Route*>>& rutas = solucion.getRutas();
+    const vector<tuple<NodeRoute*, Route*>>& clientes_a_visitar = solucion.getAllClientesSol();
+
+    int numero_iteracion = 0;
+    if (exportar) {
+        solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+    }
+
+    for (int i = 0; i < static_cast<int>(clientes_a_visitar.size()); i++) {
+        NodeRoute* clienteA = get<0>(clientes_a_visitar[i]);
+        Route* rutaA = get<1>(clientes_a_visitar[i]);
+
+        bool relocate_valido = false;
+        Route* best_rutaB = nullptr;
+        NodeRoute* best_destinoPrev = nullptr;
+        double best_mejora = 0.0;
+
+        for (int j = 0; j < static_cast<int>(rutas.size()); j++) {
+            Route* rutaB = get<1>(rutas[j]);
+
+            for (NodeRoute* destinoPrev = rutaB->getRaizModify(); destinoPrev != rutaB->getUltimo(); destinoPrev = destinoPrev->siguiente) {
+                if (clienteA == destinoPrev || clienteA->siguiente == destinoPrev || destinoPrev->siguiente == clienteA)
+                    continue;
+
+                int id_i = clienteA->id;
+                int id_p = clienteA->anterior->id;
+                int id_q = clienteA->siguiente->id;
+                int id_j = destinoPrev->id;
+                int id_k = destinoPrev->siguiente->id;
+
+                if (rutaA != rutaB && rutaB->getDemandaTotal() + demandas[id_i] > rutaB->getCapacidadTotal())
+                    continue;
+
+                double costo_actual = distancias[id_p][id_i] + distancias[id_i][id_q] + distancias[id_j][id_k];
+                double costo_nuevo = distancias[id_p][id_q] + distancias[id_j][id_i] + distancias[id_i][id_k];
+                double mejora = costo_actual - costo_nuevo;
+
+                if (mejora > 0.0) {
+                    if (criterio == 0) {
+                        if (rutaA->relocateCliente(*rutaB, clienteA, destinoPrev, demandas, distancias)) {
+                            if (exportar)
+                                solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+                            relocate_valido = true;
+                            break;
+                        }
+                    } else if (mejora > best_mejora) {
+                        best_mejora = mejora;
+                        best_rutaB = rutaB;
+                        best_destinoPrev = destinoPrev;
+                    }
+                }
+            }
+
+            if (criterio == 0 && relocate_valido) break;
+        }
+
+        if (criterio == 1 && best_mejora > 0.0) {
+            rutaA->relocateCliente(*best_rutaB, clienteA, best_destinoPrev, demandas, distancias);
+            if (exportar)
+                solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+        }
+    }
+
+    solucion.setAlgoritmo(solucion.getAlgoritmo() + " + Relocate");
+}

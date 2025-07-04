@@ -1,8 +1,9 @@
-#ifndef SOLUTION_H
-#define SOLUTION_H
+#ifndef TESTING_H
+#define TESTING_H
 
 #include "VRPLIBReader.h"
 #include "Route.h"
+#include <string>
 
 #include <fstream>
 #include <iomanip>
@@ -36,4 +37,4 @@ class Solution {
         void exportarSolutionParcial(const vector<Node>& nodos, int numero_iteracion);
 };
 
-#endif // SOLUTION_H
+#endif // TESTING_H
