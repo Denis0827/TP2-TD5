@@ -176,7 +176,7 @@ bool Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* client
         } else {
             this->_distanciaTotal += costo_nuevo_A - costo_anterior_A;
             otraRuta._distanciaTotal += costo_nuevo_B - costo_anterior_B;
-        }
+        } 
         return true;
     } else {
         return false;
