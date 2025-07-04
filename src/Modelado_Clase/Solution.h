@@ -33,17 +33,7 @@ class Solution {
         void agregarRuta(Route* ruta);
 
         void imprimirSolution();
-        void exportarSolutionParcial(int numero_iteracion);
+        void exportarSolutionParcial(const vector<Node>& nodos, int numero_iteracion);
 };
-
-/*
-
-    // Si k = 0, significa que no hay restricción de vehículos
-    if (k != 0 && static_cast<int>(solucion.size()) > k) {
-        return solucion; // si la cantidad de vehículos en la solución sobrepasa el límite de vehículos, no existe sol óptima
-    } else {
-        return solucion;
-    }
-*/
 
 #endif // SOLUTION_H

@@ -137,8 +137,8 @@ void Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* client
     } 
 }
 
-/*
-bool relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const std::vector<int>& demandas, const vector<vector<double>>& distancia ) {
+
+bool Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const std::vector<int>& demandas, const vector<vector<double>>& distancias ) {
     // entrada: dos rutas. un arco jk (donde voy a insertar el nodo) y dos nodos p y q
     // idea: me fijo q j!= p y k!=q. 
 
@@ -146,11 +146,11 @@ bool relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev
     int id_p = cliente->anterior->id;
     int id_q = cliente->siguiente->id;
     int id_j = destinoPrev->id;
+    NodeRoute* destinoNext = destinoPrev -> siguiente;
     int id_k = destinoNext->id;
 
-    NodeRoute* destinoNext = destinoPrev -> id;
-    double costo_actual = distancia[id_p][id_i] + distancia[id_i][id_q] + distancia[id_j][id_k];
-    double costo_nuevo = distancia[id_p][id_q] + distancia[id_j][id_i] + distancia[id_i][id_k];
+    double costo_actual = distancias[id_p][id_i] + distancias[id_i][id_q] + distancias[id_j][id_k];
+    double costo_nuevo = distancias[id_p][id_q] + distancias[id_j][id_i] + distancias[id_i][id_k];
 
     int demanda_i = demandas[id_i];
 
@@ -158,7 +158,7 @@ bool relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev
     //chequeo que no se pase de la capacidad si es que son rutas distintas
     if(this != &otraRuta){
         int nueva_demanda_destino = otraRuta._demandaTotal + demanda_i;
-        if (nueva_demanda_destino >otraRuta._capacidad)
+        if (nueva_demanda_destino > otraRuta._capacidad)
             return false; // no es factible
     }
 
@@ -175,12 +175,12 @@ bool relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev
         destinoNext -> anterior = cliente;
 
         // actualizo demanda y distancias (individuales por ruta) si las rutas son distintas. (si estoy en la misma ruta la demanda queda igual)
-        if (this != otraRuta){
+        if (this != &otraRuta){
             this -> _demandaTotal -= demanda_i;
             otraRuta._demandaTotal += demanda_i;
 
-            this -> _distanciaTotal += distancia[id_p][id_q] - distancias[id_p][id_i] - distancias[id_i][id_q];  
-            otraRuta._distanciaTotal += distancia[id_j][id_i] + distancias[id_i][id_k] - distancias[id_j][id_k];  
+            this -> _distanciaTotal += distancias[id_p][id_q] - distancias[id_p][id_i] - distancias[id_i][id_q];  
+            otraRuta._distanciaTotal += distancias[id_j][id_i] + distancias[id_i][id_k] - distancias[id_j][id_k];  
         } 
 
         //si es la misma ruta actualizo solo la distancia
@@ -192,7 +192,7 @@ bool relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev
     } 
     return false;
 }
-*/
+
 
 void Route::imprimirRuta() const {
     cout << "Ruta: "; // O(1)

@@ -54,9 +54,9 @@ void resolverCVRP(string algoritmo, int criterio, string instancia) {
 }
 
 int main() {
-    resolverCVRP("ClarkeWright", -1, "instancias/2l-cvrp-0/E016-03m.dat");
+    //resolverCVRP("ClarkeWright", -1, "instancias/2l-cvrp-0/E200-17c.dat");
     resolverCVRP("NearestNeighbor", -1, "instancias/2l-cvrp-0/E045-04f.dat");
-    resolverCVRP("ClarkeWright + Swap", -1, "instancias/2l-cvrp-0/E016-03m.dat");
+    //resolverCVRP("ClarkeWright + Swap", 1, "instancias/2l-cvrp-0/E200-17c.dat");
     resolverCVRP("NearestNeighbor + Swap", 0, "instancias/2l-cvrp-0/E045-04f.dat");
     resolverCVRP("NearestNeighbor + Swap", 1, "instancias/2l-cvrp-0/E045-04f.dat");
     return 0;

@@ -59,8 +59,3 @@ int main() {
 
     return 0;
 }
-
-int main() {
-    testRelocateCliente();
-    return 0;
-}

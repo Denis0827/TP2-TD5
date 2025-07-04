@@ -1,9 +1,10 @@
 CXX = g++
 CXXFLAGS = -g -std=c++17 -Wall -Wextra -O2 -I./src/Modelado_Clase -I./src/Heuristicas
 
-SRC = src/Heuristicas/testing.cpp \
+SRC = src/Heuristicas/testing_relocate.cpp \
       src/Heuristicas/ClarkeWright.cpp \
 	src/Heuristicas/NearestNeighbor.cpp \
+      src/Heuristicas/testing_relocate.cpp \
       src/Heuristicas/Swap.cpp \
       src/Modelado_Clase/VRPLIBReader.cpp \
       src/Modelado_Clase/Route.cpp \
@@ -30,3 +31,7 @@ $(EXEC): $(OBJ)
 
 clean:
 	rm -f $(OBJ) $(EXEC)
+
+
+testing_relocate: src/Heuristicas/testing_relocate.cpp src/Modelado_Clase/Route.cpp
+	$(CXX) $(CXXFLAGS) -o testing_relocate src/Heuristicas/testing_relocate.cpp src/Modelado_Clase/Route.cpp
