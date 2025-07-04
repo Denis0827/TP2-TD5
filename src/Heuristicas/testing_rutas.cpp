@@ -58,8 +58,8 @@ int main() {
 
     // --- Test 2: Swap consecutivos en la misma ruta ---
     Route r3 = crearRuta({1,2,3,4}, 10, dist);
-    NodeRoute* n1 = buscarNodo(r3, 2);
-    NodeRoute* n2b = buscarNodo(r3, 3);
+    NodeRoute* n1 = buscarNodo(r3, 1);
+    NodeRoute* n2b = buscarNodo(r3, 2);
 
     cout << "\nAntes swap consecutivos en la misma ruta: ";
     r3.imprimirRuta();

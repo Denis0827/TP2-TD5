@@ -29,6 +29,9 @@ void resolverCVRP(string algoritmo, string instancia) {
     } else if (algoritmo == "ClarkeWright + Swap") {
         solucion = heuristicas.clarkeWright();
         heuristicas.swap(solucion);
+    } else if (algoritmo == "NearestNeighbor + Swap") {
+        solucion = heuristicas.nearestNeighbor();
+        heuristicas.swap(solucion);
     }
 
     auto end = high_resolution_clock::now();
@@ -46,7 +49,8 @@ void resolverCVRP(string algoritmo, string instancia) {
 
 int main() {
     resolverCVRP("ClarkeWright", "instancias/2l-cvrp-0/E016-03m.dat");
-    resolverCVRP("NearestNeighbor", "instancias/2l-cvrp-0/E045-04f.dat");
-    resolverCVRP("ClarkeWright + Swap", "instancias/2l-cvrp-0/E016-03m.dat");
+    resolverCVRP("NearestNeighbor", "instancias/2l-cvrp-0/E016-03m.dat");
+    //resolverCVRP("ClarkeWright + Swap", "instancias/2l-cvrp-0/E045-04f.dat");
+    resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E016-03m.dat");
     return 0;
 }

@@ -124,12 +124,17 @@ bool Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* client
         costo_anterior_A = distancias[cliente_anterior_A][clienteA->id] + distancias[clienteA->id][cliente_siguiente_A];
         costo_anterior_B = distancias[cliente_anterior_B][clienteB->id] + distancias[clienteB->id][cliente_siguiente_B];
 
-        if (clienteA->siguiente != clienteB) { // nodos no consecutivos
-            costo_nuevo_A = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][cliente_siguiente_A];
-            costo_nuevo_B = distancias[cliente_siguiente_B][clienteA->id] + distancias[clienteA->id][cliente_anterior_B];
+        if (clienteA->siguiente != clienteB && clienteB->siguiente != clienteA) { // nodos no consecutivos
+            costo_nuevo_A = distancias[cliente_anterior_B][clienteA->id] + distancias[clienteA->id][cliente_siguiente_B];
+            costo_nuevo_B = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][cliente_siguiente_A];
         } else { // nodos consecutivos
-            costo_nuevo_A = distancias[clienteA->id][clienteB->id] + distancias[clienteA->id][cliente_siguiente_B];
-            costo_nuevo_B = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][clienteA->id];
+            if (clienteB == clienteA->siguiente) {
+                costo_nuevo_A = distancias[clienteA->id][clienteB->id] + distancias[clienteA->id][cliente_siguiente_B];
+                costo_nuevo_B = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][clienteA->id];
+            } else {
+                costo_nuevo_A = distancias[clienteA->id][clienteB->id] + distancias[clienteA->id][cliente_anterior_B];
+                costo_nuevo_B = distancias[cliente_siguiente_A][clienteB->id] + distancias[clienteB->id][clienteA->id];
+            }
         }
     }
 
