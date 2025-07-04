@@ -19,6 +19,16 @@ Route::Route(int capacidad, int depot) {
     this->_raiz->siguiente = this->_ultimo; // O(1)
 }
 
+vector<NodeRoute*> Route::getAllClientes() const {
+    vector<NodeRoute*> clientes;
+    NodeRoute* actual = this->_raiz->siguiente;
+    while (actual != this->_ultimo) {
+        clientes.push_back(actual);
+        actual = actual->siguiente;
+    }
+    return clientes;
+}
+
 // Pre: debe estar el depot como raiz y ultimo en la ruta
 void Route::agregarClienteInicio(int id, int demanda, double dist_depi, double dist_ij, double dist_depj) {
     NodeRoute* primerCliente = this->_raiz->siguiente; // O(1)

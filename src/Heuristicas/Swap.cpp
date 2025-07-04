@@ -76,9 +76,10 @@ double chequearMejora(Route& ruta_A, Route& ruta_B, NodeRoute* clienteA, NodeRou
     }
 }
 
-void Heuristicas::swap(Solution& solucion) {
+void Heuristicas::swap(Solution& solucion, int criterio) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix();
     const vector<tuple<int, Route*>>& rutas = solucion.getRutas();
+    const vector<NodeRoute*>& clientes_a_visitar = solucion.getAllClientesSolution();
 
     for (int i = 0; i < static_cast<int>(rutas.size()); i++) {
         Route* rutaA = get<1>(rutas[i]);
@@ -86,34 +87,70 @@ void Heuristicas::swap(Solution& solucion) {
 
         while (actualA != rutaA->getUltimo()) {
             bool swap_valido = false;
+            double best_mejora = 0.0;
+            NodeRoute* best_cliente = nullptr;
+            int best_demandaA = 0, best_demandaB = 0;
+            double best_costo_anterior_B = 0.0, best_costo_nuevo_A = 0.0, best_costo_nuevo_B = 0.0;
+            Route* best_rutaB = nullptr;
 
             for (int j = 0; j < static_cast<int>(rutas.size()); j++) {
                 Route* rutaB = get<1>(rutas[j]);
                 NodeRoute* actualB = rutaB->getRaizModify()->siguiente;
 
                 while (!swap_valido && actualB != rutaB->getUltimo()) {
+
                     if (actualA == actualB) {
                         actualB = actualB->siguiente;
                     } else {
-                        // first improvement
-                        if (chequearMejora(*rutaA, *rutaB, actualA, actualB, distancias) > 0.0) {
-                            //cout << "Swap valido entre " << actualA->id << " y " << actualB->id << endl;
-                            rutaA->swapClientes(*rutaB, actualA, actualB, demandaA, demandaB, costo_anterior_A,
-                                costo_anterior_B, costo_nuevo_A, costo_nuevo_B);
-                            actualA = actualB->siguiente;
-                            //solucion.imprimirSolution();
-                            //cout << "==" << endl;
-                            swap_valido = true;
-                        } else {
+                        if (criterio == 0) { // first improvement
+                            if (chequearMejora(*rutaA, *rutaB, actualA, actualB, distancias) > 0.0) {
+                                cout << "Swap valido entre " << actualA->id << " y " << actualB->id << endl;
+                                rutaA->swapClientes(*rutaB, actualA, actualB, demandaA, demandaB, costo_anterior_A,
+                                    costo_anterior_B, costo_nuevo_A, costo_nuevo_B);
+                                actualA = actualB->siguiente;
+                                solucion.imprimirSolution();
+                                cout << "==" << endl;
+                                swap_valido = true;
+                            } else {
+                                actualB = actualB->siguiente;
+                            }
+                        } else { // best improvement
+                            double mejora_auxiliar = chequearMejora(*rutaA, *rutaB, actualA, actualB, distancias);
+                            if (mejora_auxiliar > best_mejora) {
+                                best_mejora = mejora_auxiliar;
+                                best_cliente = actualB;
+                                best_demandaA = demandaA;
+                                best_demandaB = demandaB;
+                                best_costo_anterior_B = costo_anterior_B;
+                                best_costo_nuevo_A = costo_nuevo_A;
+                                best_costo_nuevo_B = costo_nuevo_B;
+                                best_rutaB = rutaB;
+                            }
                             actualB = actualB->siguiente;
                         }
+                        
                     }
                 }
 
                 if (swap_valido) break;
             }
 
-            if (!swap_valido) actualA = actualA->siguiente;
+            if (criterio == 1) {
+                if (best_mejora > 0.0) {
+                    cout << "Swap valido entre " << actualA->id << " y " << best_cliente->id << endl;
+                    rutaA->swapClientes(*best_rutaB, actualA, best_cliente, best_demandaA, best_demandaB, 
+                        costo_anterior_A, best_costo_anterior_B, best_costo_nuevo_A, best_costo_nuevo_B);
+                    actualA = best_cliente->siguiente;
+                    solucion.imprimirSolution();
+                    cout << "==" << endl;
+                } else {
+                    actualA = actualA->siguiente;
+                }
+            }
+
+            if (criterio == 0) {
+                if (!swap_valido) actualA = actualA->siguiente;
+            }
         }
     }
 

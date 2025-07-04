@@ -20,6 +20,16 @@ bool Solution::esFactible() const {
     return this->_cantidad_rutas <= this->_cantidad_camiones;
 }
 
+vector<NodeRoute*> Solution::getAllClientesSolution() const {
+    vector<NodeRoute*> clientes;
+    for (int i = 0; i < this->_cantidad_rutas; i++) {
+        Route* ruta = get<1>(this->_rutas[i]);
+        vector<NodeRoute*> clientes_ruta = ruta->getAllClientes();
+        clientes.insert(clientes.end(), clientes_ruta.begin(), clientes_ruta.end());
+    }
+    return clientes;
+}
+
 void Solution::setAlgoritmo(string algoritmo) {
     this->_algoritmo = algoritmo;
 }

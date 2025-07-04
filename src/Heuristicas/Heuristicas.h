@@ -22,7 +22,8 @@ class Heuristicas {
         Solution clarkeWright(); // O(N^2*logN)
         Solution nearestNeighbor(); // O(N^2)
         void relocate(Solution& solucion);
-        void swap(Solution& solucion);
+        void swap(Solution& solucion, int criterio); 
+        // criterio: 0 -> First Improvement, 1 -> Best Improvement
 };
 
 #endif // HEURISTICAS_H

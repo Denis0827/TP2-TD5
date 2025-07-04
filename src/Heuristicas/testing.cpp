@@ -2,7 +2,7 @@
 #include <chrono>
 using namespace std::chrono;
 
-void resolverCVRP(string algoritmo, string instancia) {
+void resolverCVRP(string algoritmo, int criterio, string instancia) {
     Heuristicas heuristicas(instancia);
     cout << "Solución óptima utilizando " + algoritmo << endl;
     auto start = high_resolution_clock::now();
@@ -26,12 +26,18 @@ void resolverCVRP(string algoritmo, string instancia) {
         solucion = heuristicas.clarkeWright();
     } else if (algoritmo == "NearestNeighbor") {
         solucion = heuristicas.nearestNeighbor();
-    } else if (algoritmo == "ClarkeWright + Swap") {
+    } else if (algoritmo == "ClarkeWright + Swap" && criterio == 0) {
         solucion = heuristicas.clarkeWright();
-        heuristicas.swap(solucion);
-    } else if (algoritmo == "NearestNeighbor + Swap") {
+        heuristicas.swap(solucion, 0);
+    } else if (algoritmo == "ClarkeWright + Swap" && criterio == 1) {
+        solucion = heuristicas.clarkeWright();
+        heuristicas.swap(solucion, 1);
+    } else if (algoritmo == "NearestNeighbor + Swap" && criterio == 0) {
         solucion = heuristicas.nearestNeighbor();
-        heuristicas.swap(solucion);
+        heuristicas.swap(solucion, 0);
+    } else if (algoritmo == "NearestNeighbor + Swap" && criterio == 1) {
+        solucion = heuristicas.nearestNeighbor();
+        heuristicas.swap(solucion, 1);
     }
 
     auto end = high_resolution_clock::now();
@@ -48,9 +54,10 @@ void resolverCVRP(string algoritmo, string instancia) {
 }
 
 int main() {
-    resolverCVRP("ClarkeWright", "instancias/2l-cvrp-0/E016-03m.dat");
-    resolverCVRP("NearestNeighbor", "instancias/2l-cvrp-0/E045-04f.dat");
-    resolverCVRP("ClarkeWright + Swap", "instancias/2l-cvrp-0/E016-03m.dat");
-    resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E045-04f.dat");
+    resolverCVRP("ClarkeWright", -1, "instancias/2l-cvrp-0/E016-03m.dat");
+    resolverCVRP("NearestNeighbor", -1, "instancias/2l-cvrp-0/E045-04f.dat");
+    resolverCVRP("ClarkeWright + Swap", -1, "instancias/2l-cvrp-0/E016-03m.dat");
+    resolverCVRP("NearestNeighbor + Swap", 0, "instancias/2l-cvrp-0/E045-04f.dat");
+    resolverCVRP("NearestNeighbor + Swap", 1, "instancias/2l-cvrp-0/E045-04f.dat");
     return 0;
 }

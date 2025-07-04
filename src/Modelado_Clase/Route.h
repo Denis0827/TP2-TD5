@@ -24,6 +24,7 @@ class Route {
         int getCapacidadTotal() const; // O(1)
         int getCapacidadRestante() const; // O(1)
         double getDistanciaTotal() const; // O(1)
+        vector<NodeRoute*> getAllClientes() const; // O(N)
 
         const NodeRoute* getRaiz() const; // O(1)
         const NodeRoute* getUltimo() const; // O(1)
