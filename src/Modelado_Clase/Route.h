@@ -40,7 +40,8 @@ class Route {
 
         void unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double dis_depj); // O(1)
         // chequear dist_ij
-        bool swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, const vector<vector<double>>& distancias); // O(1)
+        void swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, int demandaA, int demandaB, 
+            double costo_anterior_A, double costo_anterior_B, double costo_nuevo_A, double costo_nuevo_B); // O(1)
         // Pre: i debe ser cliente de la ruta actual, j debe ser cliente de otraRuta
         //void relocateCliente();
 

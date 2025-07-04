@@ -74,123 +74,57 @@ void Route::unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double 
     this->_distanciaTotal += otraRuta._distanciaTotal + dist_ij - dist_depi - dis_depj; // O(1)
 }
 
-bool Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, const vector<vector<double>>& distancias) {
-    // Inicialización de variables
-    int demandaA = clienteA->demanda;
-    int demandaB = clienteB->demanda;
-    double costo_anterior_A, costo_anterior_B, costo_nuevo_A, costo_nuevo_B;
+void Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, int demandaA, int demandaB, 
+    double costo_anterior_A, double costo_anterior_B, double costo_nuevo_A, double costo_nuevo_B) {
+    NodeRoute* clienteA_anterior = clienteA->anterior;
+    NodeRoute* clienteA_siguiente = clienteA->siguiente;
+    NodeRoute* clienteB_anterior = clienteB->anterior;
+    NodeRoute* clienteB_siguiente = clienteB->siguiente;
 
-    bool misma_ruta = this->_raiz->siguiente->id == otraRuta._raiz->siguiente->id; // si las rutas no tienen el mismo primer cliente, entonces son distintas rutas
-    bool excede_capacidad = false;
-
-    // si los nodos estan en la misma ruta, no habria conflicto de capacidad al swapear
-    // pero si estan en distintas rutas, debo chequear si el swap es valido, es decir, 
-    // si cambiar el cliente de ruta no me rompe la capacidad
-    if (!misma_ruta) {
-        int nuevaDemandaA = this->_demandaTotal - demandaA + demandaB;
-        int nuevaDemandaB = otraRuta.getDemandaTotal() - demandaB + demandaA;
-
-        if (nuevaDemandaA > this->_capacidad || nuevaDemandaB > otraRuta.getCapacidadTotal()) {
-            excede_capacidad = true;
-        }
-    }
-    
-    if (!excede_capacidad) { // ahora me asegure que no me rompe la capacidad en ningun caso
-        int cliente_anterior_A = clienteA->anterior->id;
-        int cliente_siguiente_A = clienteA->siguiente->id;
-        int cliente_anterior_B = clienteB->anterior->id;
-        int cliente_siguiente_B = clienteB->siguiente->id;
-
-        // Ejemplo ilustrativo A - misma ruta no consecutivos
-        // Ruta antes: 0 1 2 3 4 5 0 (swap 2,4)
-        // Ruta despues: 0 1 4 3 2 5 0
-        // Costo anterior: 1->2 + 2->3 + 3->4 + 4->5
-        // Costo nuevo: 1->4 + 4->3 + 3->2 + 2->5
-
-        // Ejemplo ilustrativo B - distintas rutas
-        // Rutas antes: (0 1 2 3 0) (0 4 5 6 0) (swap 2,5)
-        // Ruta despues: (0 1 5 3 0) (0 4 2 6 0)
-        // Costo anterior: 1->2 + 2->3 + 4->5 + 5->6
-        // Costo nuevo: 1->5 + 5->3 + 4->2 + 2->6
-
-        // Podemos ver que en los casos de ejemplos A y B buscamos hacer la misma verificacion y asignacion
-
-        // Ejemplo ilustrativo C - misma ruta consecutivos
-        // Ruta antes: 0 1 2 3 4 0 (swap 2,3)
-        // Ruta despues: 0 1 3 2 4 0
-        // Costo anterior: 1->2 + 2->3 + 2->3 + 3->4
-        // Costo nuevo: 1->3 + 3-> 2 + 3->2 + 2->4 (notar que 2->3 es igual a 3->2)
-
-        costo_anterior_A = distancias[cliente_anterior_A][clienteA->id] + distancias[clienteA->id][cliente_siguiente_A];
-        costo_anterior_B = distancias[cliente_anterior_B][clienteB->id] + distancias[clienteB->id][cliente_siguiente_B];
-
-        if (clienteA->siguiente != clienteB && clienteB->siguiente != clienteA) { // nodos no consecutivos
-            costo_nuevo_A = distancias[cliente_anterior_B][clienteA->id] + distancias[clienteA->id][cliente_siguiente_B];
-            costo_nuevo_B = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][cliente_siguiente_A];
-        } else { // nodos consecutivos
-            if (clienteB == clienteA->siguiente) {
-                costo_nuevo_A = distancias[clienteA->id][clienteB->id] + distancias[clienteA->id][cliente_siguiente_B];
-                costo_nuevo_B = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][clienteA->id];
-            } else {
-                costo_nuevo_A = distancias[clienteA->id][clienteB->id] + distancias[clienteA->id][cliente_anterior_B];
-                costo_nuevo_B = distancias[cliente_siguiente_A][clienteB->id] + distancias[clienteB->id][clienteA->id];
-            }
-        }
-    }
-
-    // Chequeo si hay alguna mejora de costo y realizo el swap
-    if (!excede_capacidad && costo_nuevo_A + costo_nuevo_B < costo_anterior_A + costo_anterior_B) {
-        NodeRoute* clienteA_anterior = clienteA->anterior;
-        NodeRoute* clienteA_siguiente = clienteA->siguiente;
-        NodeRoute* clienteB_anterior = clienteB->anterior;
-        NodeRoute* clienteB_siguiente = clienteB->siguiente;
-
-        // Realizamos el swap, teniendo cuidado con los enlaces entre clientes y tomando como guía los ejemplos
-        // ilustrativos mostrados arriba
-        if (clienteA->siguiente != clienteB && clienteB->siguiente != clienteA) { // caso NO consecutivos
-            clienteA->anterior = clienteB->anterior;
-            clienteA->siguiente = clienteB->siguiente;
+    // Realizamos el swap, teniendo cuidado con los enlaces entre clientes y tomando como guía los ejemplos
+    // ilustrativos mostrados arriba
+    if (clienteA->siguiente != clienteB && clienteB->siguiente != clienteA) { // caso NO consecutivos
+        clienteA->anterior = clienteB->anterior;
+        clienteA->siguiente = clienteB->siguiente;
+        clienteB->anterior = clienteA_anterior;
+        clienteB->siguiente = clienteA_siguiente;
+        
+        clienteA_anterior->siguiente = clienteB;
+        clienteA_siguiente->anterior = clienteB;
+        clienteB_anterior->siguiente = clienteA;
+        clienteB_siguiente->anterior = clienteA;
+    } else { // caso SI consecutivos
+        if (clienteA->siguiente == clienteB) {
+            clienteA->anterior = clienteB;
+            clienteA->siguiente = clienteB_siguiente;
             clienteB->anterior = clienteA_anterior;
-            clienteB->siguiente = clienteA_siguiente;
-            
+            clienteB->siguiente = clienteA;
+
             clienteA_anterior->siguiente = clienteB;
+            clienteB_siguiente->anterior = clienteA;
+        } else {
+            clienteA->anterior = clienteB_anterior;
+            clienteA->siguiente = clienteB;
+            clienteB->anterior = clienteA;
+            clienteB->siguiente = clienteA_siguiente;
+
             clienteA_siguiente->anterior = clienteB;
             clienteB_anterior->siguiente = clienteA;
-            clienteB_siguiente->anterior = clienteA;
-        } else { // caso SI consecutivos
-            if (clienteA->siguiente == clienteB) {
-                clienteA->anterior = clienteB;
-                clienteA->siguiente = clienteB_siguiente;
-                clienteB->anterior = clienteA_anterior;
-                clienteB->siguiente = clienteA;
-
-                clienteA_anterior->siguiente = clienteB;
-                clienteB_siguiente->anterior = clienteA;
-            } else {
-                clienteA->anterior = clienteB_anterior;
-                clienteA->siguiente = clienteB;
-                clienteB->anterior = clienteA;
-                clienteB->siguiente = clienteA_siguiente;
-
-                clienteA_siguiente->anterior = clienteB;
-                clienteB_anterior->siguiente = clienteA;
-            }
         }
-
-        this->_demandaTotal += demandaB - demandaA;
-        otraRuta._demandaTotal += demandaA - demandaB;
-        // si fuesen la misma ruta se cancela la suma
-
-        if (misma_ruta) {
-            this->_distanciaTotal += (costo_nuevo_A + costo_nuevo_B) - (costo_anterior_A + costo_anterior_B);
-        } else {
-            this->_distanciaTotal += costo_nuevo_A - costo_anterior_A;
-            otraRuta._distanciaTotal += costo_nuevo_B - costo_anterior_B;
-        } 
-        return true;
-    } else {
-        return false;
     }
+
+    this->_demandaTotal += demandaB - demandaA;
+    otraRuta._demandaTotal += demandaA - demandaB;
+    // si fuesen la misma ruta se cancela la suma
+
+    bool misma_ruta = this->getRaiz()->siguiente->id == otraRuta.getRaiz()->siguiente->id; // si las rutas no tienen el mismo primer cliente, entonces son distintas rutas
+
+    if (misma_ruta) {
+        this->_distanciaTotal += (costo_nuevo_A + costo_nuevo_B) - (costo_anterior_A + costo_anterior_B);
+    } else {
+        this->_distanciaTotal += costo_nuevo_A - costo_anterior_A;
+        otraRuta._distanciaTotal += costo_nuevo_B - costo_anterior_B;
+    } 
 }
 
 /*
