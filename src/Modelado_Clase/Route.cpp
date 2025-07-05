@@ -141,6 +141,9 @@ void Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* client
 bool Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const std::vector<int>& demandas, const vector<vector<double>>& distancias ) {
     // entrada: dos rutas. un arco jk (donde voy a insertar el nodo) y dos nodos p y q
     // idea: me fijo q j!= p y k!=q. 
+    if (!cliente || !cliente->anterior || !cliente->siguiente || !destinoPrev || !destinoPrev->siguiente) {
+        return false;
+    }
 
     int id_i = cliente->id;
     int id_p = cliente->anterior->id;
@@ -148,6 +151,17 @@ bool Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* dest
     int id_j = destinoPrev->id;
     NodeRoute* destinoNext = destinoPrev -> siguiente;
     int id_k = destinoNext->id;
+
+
+    // Evitar insertar al cliente junto a sí mismo o en posiciones triviales
+    if (cliente == destinoPrev || 
+        cliente == destinoPrev->siguiente || 
+        cliente->siguiente == destinoPrev || 
+        cliente->anterior == destinoPrev ||
+        id_j == id_p || id_k == id_q || id_j == id_q) {
+        return false;
+    }
+
 
     double costo_actual = distancias[id_p][id_i] + distancias[id_i][id_q] + distancias[id_j][id_k];
     double costo_nuevo = distancias[id_p][id_q] + distancias[id_j][id_i] + distancias[id_i][id_k];
@@ -206,6 +220,38 @@ void Route::imprimirRuta() const {
               << " | Distancia total: " << this->getDistanciaTotal() // O(1)
               << endl; // O(1)
 }
+
+Route::Route(const Route& other) {
+    this->_demandaTotal = other._demandaTotal;
+    this->_capacidad = other._capacidad;
+    this->_distanciaTotal = other._distanciaTotal;
+    
+    // Copiar la lista enlazada
+    this->_raiz = nullptr;
+    this->_ultimo = nullptr;
+    
+    if (other._raiz != nullptr) {
+        // Copiar el primer nodo (depot)
+        this->_raiz = new NodeRoute{other._raiz->id, other._raiz->demanda, nullptr, nullptr};
+        
+        NodeRoute* actualOrigen = other._raiz->siguiente;
+        NodeRoute* actualDestino = this->_raiz;
+        
+        // Copiar todos los nodos intermedios
+        while (actualOrigen != nullptr) {
+            NodeRoute* nuevoNodo = new NodeRoute{actualOrigen->id, actualOrigen->demanda, actualDestino, nullptr};
+            actualDestino->siguiente = nuevoNodo;
+            
+            if (actualOrigen == other._ultimo) {
+                this->_ultimo = nuevoNodo;
+            }
+            
+            actualDestino = nuevoNodo;
+            actualOrigen = actualOrigen->siguiente;
+        }
+    }
+}
+
 
 // --- Getter Implementations ---
 

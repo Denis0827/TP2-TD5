@@ -49,6 +49,8 @@ class Route {
 
         void imprimirRuta() const; // O(N)
 
+        Route(const Route& other); // Constructor de copia
+
 };
 
 #endif // ROUTE_H

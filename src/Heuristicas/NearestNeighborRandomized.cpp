@@ -1,114 +1,127 @@
 #include "Heuristicas.h"
+#include <vector>
+#include <random>
+#include <algorithm>
+#include <limits>
+#include <iostream>
+using namespace std;
 
+// Definición de la función auxiliar ordenarPorDistancias
 vector<int> ordenarPorDistancias(const vector<double>& distancias) {
-    int n = distancias.size(); // O(1)
-    vector<pair<double, int>> dist_con_id; // O(1) también guardo los ids para después invocarlo
-    vector<int> clientes_ordenados(n + 1, 0); // O(N)
+    int n = distancias.size();
+    vector<pair<double, int>> dist_con_id;
+    vector<int> clientes_ordenados(n + 1, 0);
 
-    // Inicializamos dist_con_id con su respectivo id
-    for (int i = 1; i < static_cast<int>(n); ++i) { // O(N)
-        dist_con_id.push_back({distancias[i], i}); // O(1)
+    for (int i = 1; i < n; ++i) {
+        dist_con_id.push_back({distancias[i], i});
     }
 
-    sort(dist_con_id.begin(), dist_con_id.end()); // O(N*logN) primero ordena por distancia. Si empata, ordena por numero de cliente
+    sort(dist_con_id.begin(), dist_con_id.end());
 
-    // guardar solo los índices de los clientes
-    int id = 1; // O(1)
-    for (auto it = dist_con_id.begin(); it != dist_con_id.end(); ++it) { // O(N)
-        clientes_ordenados[id] = it->second; // O(1) me fijo en qué posición está del ordenamiento
-        id++; // O(1)
+    int id = 1;
+    for (auto& p : dist_con_id) {
+        clientes_ordenados[id++] = p.second;
     }
 
-    return clientes_ordenados; // O(1)
+    return clientes_ordenados;
 }
-// Complejidad total: O(N*logN)
 
-int clienteMinimoDistancia(const vector<double>& distanciasCliente, int id, const vector<int>& visitados, const vector<int>& demandas, int capacidadRestante) {
-    int minCliente = -1; // O(1)
-    double minDist = numeric_limits<double>::max(); // O(1) empiezo como inf
+// Definición de las funciones privadas de Heuristicas
 
-    for (int i = 1; i < static_cast<int>(distanciasCliente.size()); i++) { // O(N)
-        if (!visitados[i] && demandas[i] <= capacidadRestante) { // O(1) verificamos si es posible agregar el cliente a la ruta
-            if (i != id) { // O(1)
-                if (distanciasCliente[i] < minDist) { // O(1) actualizamos el minimo
-                    minDist = distanciasCliente[i]; // O(1)
-                    minCliente = i; // O(1)
-                }
-            }
+vector<int> Heuristicas::obtenerCandidatosRCL(const vector<double>& distanciasCliente, int id, 
+                                    const vector<int>& visitados, const vector<int>& demandas, 
+                                    int capacidadRestante, double alpha) {
+    vector<pair<double, int>> candidatos;
+
+    for (int i = 1; i < (int)distanciasCliente.size(); i++) {
+        if (!visitados[i] && demandas[i] <= capacidadRestante && i != id) {
+            candidatos.push_back({distanciasCliente[i], i});
         }
     }
 
-    return minCliente; // O(1)
-}
-// Complejidad total: O(N)
-
-Solution Heuristicas::nearestNeighbor() {
-    const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix(); // O(1)
-    const vector<int>& demandas = this->_instancia.getDemands(); // O(1)
-    int depot = this->_instancia.getDepotId(); // O(1)
-    int capacidad = this->_instancia.getCapacity(); // O(1)
-    int n = this->_instancia.getDimension(); // O(1)
-    int k = this->_instancia.getNumVehicles(); // O(1)
-
-    vector<int> clientes_depot_ordenados = ordenarPorDistancias(distancias[depot]); // O(N*logN)
-
-    // para saber cuando todos los clientes tienen una ruta
-    int clientes_no_visitados = n - 1; // O(1) sin contar el deposito
-    vector<int> visitados (n + 1, 0); // O(N) cada i del vector es el cliente i
-    visitados[depot] = 1; // O(1) no queremos considerar el depot, solo clientes
-
-    int paso = 0;
-    Solution solucion = Solution(k, "NearestNeighbor");
-
-    // empiezo del depot, veo el nodo con min distancia y agregarlo a la ruta
-    while (clientes_no_visitados > 0) { 
-        // busco en el vector de distancias del depot cuál es el primero que no fue visitado todavía
-        int primer_cliente_sin_ruta = 0; // O(1)
-        for (int i = 1; i < static_cast<int>(n); i++) { // O(N)
-            if (visitados[clientes_depot_ordenados[i]] == 0) { // O(1)
-                primer_cliente_sin_ruta = clientes_depot_ordenados[i]; // O(1)
-                visitados[clientes_depot_ordenados[i]] = 1; // O(1)
-                clientes_no_visitados--; // O(1)
-                break; // si encontré el cliente salgo del ciclo, me quedo con el primero
-            }
-        }
-        // Complejidad total del ciclo: O(N)
-
-        Route* rutaActual = new Route(capacidad, depot); // O(1) creamos la ruta nueva
-        rutaActual->agregarClienteInicio(primer_cliente_sin_ruta, demandas[primer_cliente_sin_ruta],
-            distancias[depot][primer_cliente_sin_ruta]); // O(1) agregamos el cliente encontrado
-
-        int actual = primer_cliente_sin_ruta; // O(1)
-        bool puedeAgregar = true; // O(1) me dice si encuentra clientes que se pueden agregar a la ruta
-
-        while (puedeAgregar != false) { // O(1)
-            int candidato = clienteMinimoDistancia(distancias[actual], actual, visitados, demandas, 
-                rutaActual->getCapacidadRestante()); // O(N) 
-            
-            if (candidato != -1) { // O(1) solo entro si existe candidato, es decir si existe minimo que cumple la factibilidad
-                // agregamos el candidato a la ruta
-                rutaActual->agregarClienteFinal(candidato, demandas[candidato], distancias[actual][depot], distancias[actual][candidato], 
-                    distancias[candidato][depot]); // O(1)
-
-                visitados[candidato] = 1; // O(1) ya visité entonces el candidato
-                actual = candidato; // O(1) ahora busco el minimo cliente desde el candidato (candidato del candidato)
-                clientes_no_visitados--; // O(1)
-
-                //Solution parcial = solucion;
-                //parcial.push_back(rutaActual);
-                //exportarRutasPaso(parcial, this->_instancia.getNodes(), paso++);
-            } else {
-                puedeAgregar = false; // O(1) si no encontré ningun candidato, la ruta esta hecha
-            }
-            
-        }
-        solucion.agregarRuta(rutaActual); // O(1) agrego ruta a la solucion
-        //exportarRutasPaso(solucion, this->_instancia.getNodes(), paso++);
+    if (candidatos.empty()) {
+        return vector<int>();
     }
-    return solucion;
-    // Complejidad total del ciclo: O(N^2)
-    // ¿Por qué? Cada cliente puede estar únicamente en una ruta, entonces visitaremos solo única vez a cada cliente
-    // Para cada cliente, puede estar o al principio de la ruta (primer_cliente_sin_ruta) o en el medio (candidato)
-    // Cada búsqueda respectiva se realiza en O(N), por lo que con N clientes tendríamos O(N^2)
+
+    sort(candidatos.begin(), candidatos.end());
+
+    double minDist = candidatos[0].first;
+    double maxDist = candidatos.back().first;
+    double threshold = minDist + alpha * (maxDist - minDist);
+
+    vector<int> rcl;
+    for (const auto& candidato : candidatos) {
+        if (candidato.first <= threshold) {
+            rcl.push_back(candidato.second);
+        }
+    }
+
+    return rcl;
 }
-// Complejidad total NearestNeighbor: O(N^2)
+
+int Heuristicas::seleccionarPrimerClienteRCL(const vector<int>& clientes_depot_ordenados, 
+                                   const vector<int>& visitados, int n, double alpha) {
+    vector<int> candidatos_disponibles;
+
+    for (int i = 1; i < n; i++) {
+        if (visitados[clientes_depot_ordenados[i]] == 0) {
+            candidatos_disponibles.push_back(clientes_depot_ordenados[i]);
+        }
+    }
+
+    if (candidatos_disponibles.empty()) {
+        return -1;
+    }
+
+    int rcl_size = max(1, static_cast<int>(candidatos_disponibles.size() * alpha));
+
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> dis(0, rcl_size - 1);
+
+    return candidatos_disponibles[dis(gen)];
+}
+
+// Definición del método nearestNeighborGRASP simplificado para que compile
+Solution Heuristicas::nearestNeighborGRASP(double alpha, int maxIteraciones) {
+    const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix();
+    const vector<int>& demandas = this->_instancia.getDemands();
+    int depot = this->_instancia.getDepotId();
+    int capacidad = this->_instancia.getCapacity();
+    int n = this->_instancia.getDimension();
+    int k = this->_instancia.getNumVehicles();
+
+    Solution mejorSolucion(k, "GRASP-NearestNeighbor");
+    double mejorCosto = numeric_limits<double>::max();
+
+    for (int iter = 0; iter < maxIteraciones; iter++) {
+        vector<int> clientes_depot_ordenados = ordenarPorDistancias(distancias[depot]);
+
+        int clientes_no_visitados = n - 1;
+        vector<int> visitados(n + 1, 0);
+        visitados[depot] = 1;
+
+        Solution solucionActual(k, "GRASP-NearestNeighbor");
+
+        // Aquí solo creamos una ruta con un primer cliente randomizado para test
+        int primer_cliente = seleccionarPrimerClienteRCL(clientes_depot_ordenados, visitados, n, alpha);
+
+        if (primer_cliente == -1) break;
+
+        visitados[primer_cliente] = 1;
+        clientes_no_visitados--;
+
+        Route* rutaActual = new Route(capacidad, depot);
+        rutaActual->agregarClienteInicio(primer_cliente, demandas[primer_cliente], distancias[depot][primer_cliente]);
+
+        solucionActual.agregarRuta(rutaActual);
+
+        double costoActual = solucionActual.getCostoTotal();
+        if (costoActual < mejorCosto) {
+            mejorCosto = costoActual;
+            mejorSolucion = solucionActual;
+        }
+    }
+
+    return mejorSolucion;
+}
