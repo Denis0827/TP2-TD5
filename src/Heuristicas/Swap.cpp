@@ -89,7 +89,7 @@ void Heuristicas::swap(Solution& solucion, int criterio, bool exportar) {
         solucion.setAlgoritmo(algoritmo_goloso + " + Swap (BestImprovement)"); // O(1)
     }
     
-    int numero_iteracion = 0; // O(1)
+    int numero_iteracion = 1; // O(1)
     if (exportar) {
         // Exporta la solución inicial antes de aplicar el operador
         solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);

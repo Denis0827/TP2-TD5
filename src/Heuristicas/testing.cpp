@@ -2,7 +2,7 @@
 #include <chrono>
 using namespace std::chrono;
 
-void resolverCVRP(string algoritmo, string instancia, bool exportar = false, string criterio = "") {
+void resolverCVRP(string algoritmo, string instancia, bool exportar = false, string criterio = "", int rcl_size = 3) {
     size_t slash_pos = instancia.find_last_of('/');
     size_t dot_pos = instancia.find_last_of('.');
     string nombre = instancia.substr(slash_pos + 1, dot_pos - slash_pos - 1);
@@ -41,6 +41,8 @@ void resolverCVRP(string algoritmo, string instancia, bool exportar = false, str
     } else if (algoritmo == "NearestNeighbor + Relocate" && criterio == "bestImprovement") {
         solucion = heuristicas.nearestNeighbor();
         heuristicas.relocate(solucion, 1, exportar);
+    } else if (algoritmo == "NearestNeighborRandomized") {
+        solucion = heuristicas.nearestNeighborRandomized(exportar, rcl_size);
     } 
 
     auto end = high_resolution_clock::now();
@@ -58,7 +60,7 @@ void resolverCVRP(string algoritmo, string instancia, bool exportar = false, str
 
 int main() {
     //resolverCVRP("ClarkeWright", "instancias/2l-cvrp-0/E016-03m.dat", false);
-    resolverCVRP("NearestNeighbor", "instancias/2l-cvrp-0/E045-04f.dat", false);
+    resolverCVRP("NearestNeighborRandomized", "instancias/2l-cvrp-0/E045-04f.dat", false);
 
     /*
     resolverCVRP("ClarkeWright + Swap", "instancias/2l-cvrp-0/E045-04f.dat", false, "firstImprovement");
@@ -67,9 +69,11 @@ int main() {
     resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E045-04f.dat", false, "bestImprovement");
     */
 
-    //resolverCVRP("ClarkeWright + Relocate", "instancias/2l-cvrp-0/E016-03m.dat", false, "firstImprovement");
-    //resolverCVRP("ClarkeWright + Relocate", "instancias/2l-cvrp-0/E016-03m.dat", false, "bestImprovement");
-    resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E045-04f.dat", false, "firstImprovement");
-    resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E045-04f.dat", false, "bestImprovement");
+    /*
+    resolverCVRP("ClarkeWright + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "firstImprovement");
+    resolverCVRP("ClarkeWright + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "bestImprovement");
+    resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "firstImprovement");
+    resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "bestImprovement");
+    */
     return 0;
 }

@@ -42,7 +42,7 @@ void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
         solucion.setAlgoritmo(algoritmo_goloso + " + Relocate (BestImprovement)"); // O(1)
     }
 
-    int numero_iteracion = 0;
+    int numero_iteracion = 1;
     if (exportar) {
         solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
     }

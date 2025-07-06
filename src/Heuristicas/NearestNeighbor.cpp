@@ -52,12 +52,12 @@ Solution Heuristicas::nearestNeighbor(bool exportar) {
 
     vector<int> clientes_depot_ordenados = ordenarPorDistancias(distancias[depot]); // O(N*logN)
 
-    // para saber cuando todos los clientes tienen una ruta
+    // para saber cuándo todos los clientes tienen una ruta
     int clientes_no_visitados = n - 1; // O(1) sin contar el deposito
     vector<int> visitados (n + 1, 0); // O(N) cada i del vector es el cliente i
     visitados[depot] = 1; // O(1) no queremos considerar el depot, solo clientes
 
-    int numero_iteracion = 0;
+    int numero_iteracion = 1;
     Solution solucion = Solution(k, "NearestNeighbor", this->_nombreInstancia);
 
     if (exportar) {
@@ -68,6 +68,7 @@ Solution Heuristicas::nearestNeighbor(bool exportar) {
     while (clientes_no_visitados > 0) { 
         // busco en el vector de distancias del depot cuál es el primero que no fue visitado todavía
         int primer_cliente_sin_ruta = 0; // O(1)
+        
         for (int i = 1; i <= static_cast<int>(n); i++) { // O(N)
             if (visitados[clientes_depot_ordenados[i]] == 0) { // O(1)
                 primer_cliente_sin_ruta = clientes_depot_ordenados[i]; // O(1)
@@ -103,9 +104,7 @@ Solution Heuristicas::nearestNeighbor(bool exportar) {
                     parcial.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
                 }
 
-            } else {
-                puedeAgregar = false; // O(1) si no encontré ningun candidato, la ruta esta hecha
-            }
+            } else puedeAgregar = false; // O(1) si no encontré ningun candidato, la ruta esta hecha
             
         }
         solucion.agregarRuta(rutaActual); // O(1) agrego ruta a la solucion

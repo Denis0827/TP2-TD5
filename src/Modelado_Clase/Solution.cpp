@@ -86,6 +86,8 @@ void Solution::exportarSolutionParcial(const vector<Node>& nodos, int numero_ite
         algoritmo = "NNRelocate_FI";
     } else if (this->_algoritmo == "NearestNeighbor + Relocate (BestImprovement)") {
         algoritmo = "NNRelocate_BI";
+    } else if (this->_algoritmo == "NearestNeighborRandomized") {
+        algoritmo = "NNRandom";
     }
 
     std::ostringstream filename;

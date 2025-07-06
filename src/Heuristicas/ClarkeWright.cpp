@@ -101,7 +101,7 @@ Solution Heuristicas::clarkeWright(bool exportar) {
 
     Solution solucion = Solution(k, "ClarkeWright", this->_nombreInstancia);
 
-    int numero_iteracion = 0; // Contador de pasos para los CSV
+    int numero_iteracion = 1; // Contador de pasos para los CSV
     if (exportar) {
         // Exporta el estado inicial, con todas las rutas individuales
         Solution parcial = solucion;

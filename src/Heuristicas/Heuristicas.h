@@ -37,11 +37,8 @@ class Heuristicas {
             const vector<int>& demandas, const vector<vector<double>>& distancias);
 
         // Funciones auxiliares para GRASP
-        vector<int> obtenerCandidatosRCL(const vector<double>& distanciasCliente, int id, 
-            const vector<int>& visitados, const vector<int>& demandas, int capacidadRestante, double alpha);
-    
-        int seleccionarPrimerClienteRCL(const vector<int>& clientes_depot_ordenados, 
-            const vector<int>& visitados, int n, double alpha);
+        int clienteAleatorioRCL (const vector<double>& distanciasCliente, int id, const vector<int>& visitados, 
+            const vector<int>& demandas, int capacidadRestante, int rcl_size, mt19937& gen);
 
     public:
         // inicializa _instancia usando el constructor adecuado
@@ -56,7 +53,8 @@ class Heuristicas {
         // criterio: 0 -> First Improvement, 1 -> Best Improvement
 
         // Método GRASP para Nearest Neighbor
-        Solution graspNearestNeighbor(int rcl_size = 3, int seed = -1); // O(N^2)
+        Solution nearestNeighborRandomized(bool exportar = false, int rcl_size = 3); // O(N^2)
+        Solution GRASP(bool exportar = false);
 };
 
 #endif // HEURISTICAS_H
