@@ -137,10 +137,7 @@ void Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* client
     } 
 }
 
-
 bool Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const std::vector<int>& demandas, const vector<vector<double>>& distancias ) {
-    // entrada: dos rutas. un arco jk (donde voy a insertar el nodo) y dos nodos p y q
-    // idea: me fijo q j!= p y k!=q. 
     if (!cliente || !cliente->anterior || !cliente->siguiente || !destinoPrev || !destinoPrev->siguiente) {
         return false;
     }
@@ -149,62 +146,44 @@ bool Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* dest
     int id_p = cliente->anterior->id;
     int id_q = cliente->siguiente->id;
     int id_j = destinoPrev->id;
-    NodeRoute* destinoNext = destinoPrev -> siguiente;
+    NodeRoute* destinoNext = destinoPrev->siguiente;
     int id_k = destinoNext->id;
 
-
-    // Evitar insertar al cliente junto a sí mismo o en posiciones triviales
-    if (cliente == destinoPrev || 
-        cliente == destinoPrev->siguiente || 
-        cliente->siguiente == destinoPrev || 
-        cliente->anterior == destinoPrev ||
-        id_j == id_p || id_k == id_q || id_j == id_q) {
+    // Si intenta insertarse a sí mismo o en una posición adyacente que no genera cambio
+    if (cliente == destinoPrev || cliente == destinoNext) {
         return false;
     }
-
 
     double costo_actual = distancias[id_p][id_i] + distancias[id_i][id_q] + distancias[id_j][id_k];
     double costo_nuevo = distancias[id_p][id_q] + distancias[id_j][id_i] + distancias[id_i][id_k];
 
     int demanda_i = demandas[id_i];
 
-
-    //chequeo que no se pase de la capacidad si es que son rutas distintas
-    if(this != &otraRuta){
-        int nueva_demanda_destino = otraRuta._demandaTotal + demanda_i;
-        if (nueva_demanda_destino > otraRuta._capacidad)
-            return false; // no es factible
+    if (this != &otraRuta) {
+        if (otraRuta._demandaTotal + demanda_i > otraRuta._capacidad) return false;
+        if (costo_nuevo >= costo_actual) return false;
     }
 
-    // si mejora el costo, aplicamos el cambio
-    if (costo_nuevo < costo_actual){
-        // saco a  i   y conecto p -> q
-        cliente -> anterior -> siguiente = cliente -> siguiente;
-        cliente -> siguiente -> anterior = cliente -> anterior;
+    // Quitar cliente de su lugar
+    cliente->anterior->siguiente = cliente->siguiente;
+    cliente->siguiente->anterior = cliente->anterior;
 
-        // lo inserto entre k  y  j
-        cliente -> anterior = destinoPrev;
-        cliente -> siguiente = destinoNext;
-        destinoPrev -> siguiente = cliente;
-        destinoNext -> anterior = cliente;
+    // Insertar cliente en nueva posición
+    cliente->anterior = destinoPrev;
+    cliente->siguiente = destinoNext;
+    destinoPrev->siguiente = cliente;
+    destinoNext->anterior = cliente;
 
-        // actualizo demanda y distancias (individuales por ruta) si las rutas son distintas. (si estoy en la misma ruta la demanda queda igual)
-        if (this != &otraRuta){
-            this -> _demandaTotal -= demanda_i;
-            otraRuta._demandaTotal += demanda_i;
+    if (this != &otraRuta) {
+        this->_demandaTotal -= demanda_i;
+        otraRuta._demandaTotal += demanda_i;
+        this->_distanciaTotal += distancias[id_p][id_q] - distancias[id_p][id_i] - distancias[id_i][id_q];
+        otraRuta._distanciaTotal += distancias[id_j][id_i] + distancias[id_i][id_k] - distancias[id_j][id_k];
+    } else {
+        this->_distanciaTotal += costo_nuevo - costo_actual;
+    }
 
-            this -> _distanciaTotal += distancias[id_p][id_q] - distancias[id_p][id_i] - distancias[id_i][id_q];  
-            otraRuta._distanciaTotal += distancias[id_j][id_i] + distancias[id_i][id_k] - distancias[id_j][id_k];  
-        } 
-
-        //si es la misma ruta actualizo solo la distancia
-        else{
-            this -> _distanciaTotal += costo_nuevo - costo_actual;
-        }
-
-        return true;
-    } 
-    return false;
+    return true;
 }
 
 

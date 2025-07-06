@@ -82,7 +82,6 @@ int Heuristicas::seleccionarPrimerClienteRCL(const vector<int>& clientes_depot_o
     return candidatos_disponibles[dis(gen)];
 }
 
-// Definición del método nearestNeighborGRASP simplificado para que compile
 Solution Heuristicas::nearestNeighborGRASP(double alpha, int maxIteraciones) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix();
     const vector<int>& demandas = this->_instancia.getDemands();
