@@ -1,59 +1,34 @@
-/*#include "Heuristicas.h"
-
-vector<Route> Heuristicas::relocate(const vector<Route>& solucion_inicial) {
-    vector<Route> solucion = solucion_inicial; 
-    int cantidad_vehiculos = solucion_inicial.size();
-    const vector<vector<double>>& distancias = instancia.getDistanceMatrix();
-    const vector<int>& demandas = instancia.getDemands();
-    int capacidad = instancia.getCapacity();
-    int n = instancia.getDimension();
-
-    int clientesNoVisitados = n - 1;
-    vector<int> visitados (n + 1, 0);
-
-    for (int i = 0; i < cantidad_vehiculos; i++){
-        int cliente_i = solucion_inicial[i].nodes[1];
-        int cliente_p = solucion_inicial[i].nodes[0];
-        int cliente_q = solucion_inicial[i].nodes[2];
-
-        int costo_pi = distancias[cliente_p][cliente_i];
-        int costo_iq = distancias[cliente_i][cliente_q];
-        int costo_pq = distancias[cliente_p][cliente_q];
-
-        int cliente_j = 0;
-        int cliente_k = 0;
-
-        int costo_jk = 0;
-        int costo_ji = 0;
-        int costo_ik = 0;
-
-        for (int s = 0; s < cantidad_vehiculos; s++) {
-            int cant_clientes_vehiculo_s = solucion_inicial[s].nodes.size() - 2; // elimino los depot del inicio y final
-            for (int j = 0; j <= cant_clientes_vehiculo_s; j++) {
-                // verifico que cliente_j no sea igual a cliente_i ni cliente_p
-                if (solucion_inicial[s].nodes[j] != cliente_i && solucion_inicial[s].nodes[j] != cliente_p) { 
-                    cliente_j = solucion_inicial[s].nodes[j];
-                    cliente_k = solucion_inicial[s].nodes[j + 1];
-                    costo_jk = distancias[cliente_j][cliente_k];
-                    costo_ji = distancias[cliente_j][cliente_i];
-                    costo_ik = distancias[cliente_i][cliente_k];
-                    
-                    // verificacion de mejora
-                }
-            }
-        }
-
-
-
-        insert
-
-    }
-}
-
-*/
-
-
 #include "Heuristicas.h"
+
+double Heuristicas::chequearMejoraRelocate(Route& rutaA, Route& rutaB, NodeRoute* cliente, NodeRoute* destinoPrev, const vector<int>& demandas, const vector<vector<double>>& distancias) {
+    int cliente_i = cliente->id;
+    int cliente_p = cliente->anterior->id;
+    int cliente_q = cliente->siguiente->id;
+    int cliente_j = destinoPrev->id;
+    NodeRoute* destinoNext = destinoPrev->siguiente;
+    int cliente_k = destinoNext->id;
+
+    double mejora = 0.0;
+    bool misma_ruta = rutaA.getRaiz()->siguiente == rutaB.getRaiz()->siguiente;
+    bool excede_capacidad = false;
+
+    if (!misma_ruta) {
+        if (rutaB.getDemandaTotal() + demandas[cliente_i] > rutaB.getCapacidadTotal()) {
+            excede_capacidad = true;
+        }
+    }
+
+    if (!excede_capacidad) {
+        double costo_actual = distancias[cliente_p][cliente_i] + distancias[cliente_i][cliente_q] + distancias[cliente_j][cliente_k];
+        double costo_nuevo = distancias[cliente_p][cliente_q] + distancias[cliente_j][cliente_i] + distancias[cliente_i][cliente_k];
+
+        if (costo_nuevo < costo_actual) {
+            mejora = costo_actual - costo_nuevo;
+        } 
+    }
+
+    return mejora;
+}
 
 void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix();
@@ -77,47 +52,51 @@ void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
 
         for (int j = 0; j < static_cast<int>(rutas.size()); j++) {
             Route* rutaB = get<1>(rutas[j]);
+            NodeRoute* destinoPrev = rutaB->getRaizModify(); // cliente_j
 
-            for (NodeRoute* destinoPrev = rutaB->getRaizModify(); destinoPrev != rutaB->getUltimo(); destinoPrev = destinoPrev->siguiente) {
-                if (clienteA == destinoPrev || clienteA->siguiente == destinoPrev || destinoPrev->siguiente == clienteA)
+            // el cliente_j debe tener tener al menos un siguiente que luego lo elegimos como cliente_k
+            while (destinoPrev != rutaB->getUltimo()->anterior) { 
+
+                if (clienteA == destinoPrev || // no tiene sentido que i = j porque estariamos poniendo a i en la arista i->k que ya no existe
+                    clienteA == destinoPrev->siguiente  || // no tiene sentido que i = k porque pondriamos a i en la arista j->i que ya no existe
+                    clienteA->siguiente == destinoPrev || destinoPrev->siguiente == clienteA) // ya estarian en esas posiciones
+                    break;
+
+                if (rutaA != rutaB && rutaB->getDemandaTotal() + demandas[clienteA->id] > rutaB->getCapacidadTotal())
                     continue;
 
-                int id_i = clienteA->id;
-                int id_p = clienteA->anterior->id;
-                int id_q = clienteA->siguiente->id;
-                int id_j = destinoPrev->id;
-                int id_k = destinoPrev->siguiente->id;
+                double mejora = chequearMejoraRelocate(*rutaA, *rutaB, clienteA, destinoPrev, demandas, distancias);
 
-                if (rutaA != rutaB && rutaB->getDemandaTotal() + demandas[id_i] > rutaB->getCapacidadTotal())
-                    continue;
-
-                double costo_actual = distancias[id_p][id_i] + distancias[id_i][id_q] + distancias[id_j][id_k];
-                double costo_nuevo = distancias[id_p][id_q] + distancias[id_j][id_i] + distancias[id_i][id_k];
-                double mejora = costo_actual - costo_nuevo;
-
-                if (mejora > 0.0) {
-                    if (criterio == 0) {
-                        if (rutaA->relocateCliente(*rutaB, clienteA, destinoPrev, demandas, distancias)) {
-                            if (exportar)
-                                solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
-                            relocate_valido = true;
-                            break;
+                if (criterio == 0) {
+                    if (mejora > 0.0) {
+                        rutaA->relocateCliente(*rutaB, clienteA, destinoPrev, demandas, distancias);
+                        if (exportar) {
+                            solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
                         }
-                    } else if (mejora > best_mejora) {
+                        relocate_valido = true;
+                    } else {
+                        destinoPrev = destinoPrev->siguiente;
+                    }
+                } else {
+                    if (mejora > best_mejora) {
                         best_mejora = mejora;
                         best_rutaB = rutaB;
                         best_destinoPrev = destinoPrev;
                     }
+                    destinoPrev = destinoPrev->siguiente;
                 }
+
             }
 
-            if (criterio == 0 && relocate_valido) break;
+            // salgo si ya hice relocate en first improvement 
+            if (relocate_valido) break; // O(1)
         }
 
         if (criterio == 1 && best_mejora > 0.0) {
             rutaA->relocateCliente(*best_rutaB, clienteA, best_destinoPrev, demandas, distancias);
-            if (exportar)
+            if (exportar) {
                 solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+            }
         }
     }
 

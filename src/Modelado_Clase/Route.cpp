@@ -137,32 +137,16 @@ void Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* client
     } 
 }
 
-bool Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const std::vector<int>& demandas, const vector<vector<double>>& distancias ) {
-    if (!cliente || !cliente->anterior || !cliente->siguiente || !destinoPrev || !destinoPrev->siguiente) {
-        return false;
-    }
-
-    int id_i = cliente->id;
-    int id_p = cliente->anterior->id;
-    int id_q = cliente->siguiente->id;
-    int id_j = destinoPrev->id;
+void Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const vector<int>& demandas, const vector<vector<double>>& distancias ) {
+    int cliente_i = cliente->id;
+    int cliente_p = cliente->anterior->id;
+    int cliente_q = cliente->siguiente->id;
+    int cliente_j = destinoPrev->id;
     NodeRoute* destinoNext = destinoPrev->siguiente;
-    int id_k = destinoNext->id;
+    int cliente_k = destinoNext->id;
 
-    // Si intenta insertarse a sí mismo o en una posición adyacente que no genera cambio
-    if (cliente == destinoPrev || cliente == destinoNext) {
-        return false;
-    }
-
-    double costo_actual = distancias[id_p][id_i] + distancias[id_i][id_q] + distancias[id_j][id_k];
-    double costo_nuevo = distancias[id_p][id_q] + distancias[id_j][id_i] + distancias[id_i][id_k];
-
-    int demanda_i = demandas[id_i];
-
-    if (this != &otraRuta) {
-        if (otraRuta._demandaTotal + demanda_i > otraRuta._capacidad) return false;
-        if (costo_nuevo >= costo_actual) return false;
-    }
+    double costo_actual = distancias[cliente_p][cliente_i] + distancias[cliente_i][cliente_q] + distancias[cliente_j][cliente_k];
+    double costo_nuevo = distancias[cliente_p][cliente_q] + distancias[cliente_j][cliente_i] + distancias[cliente_i][cliente_k];
 
     // Quitar cliente de su lugar
     cliente->anterior->siguiente = cliente->siguiente;
@@ -175,17 +159,14 @@ bool Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* dest
     destinoNext->anterior = cliente;
 
     if (this != &otraRuta) {
-        this->_demandaTotal -= demanda_i;
-        otraRuta._demandaTotal += demanda_i;
-        this->_distanciaTotal += distancias[id_p][id_q] - distancias[id_p][id_i] - distancias[id_i][id_q];
-        otraRuta._distanciaTotal += distancias[id_j][id_i] + distancias[id_i][id_k] - distancias[id_j][id_k];
+        this->_demandaTotal -= demandas[cliente_i];
+        otraRuta._demandaTotal += demandas[cliente_i];
+        this->_distanciaTotal += distancias[cliente_p][cliente_q] - distancias[cliente_p][cliente_i] - distancias[cliente_i][cliente_q];
+        otraRuta._distanciaTotal += distancias[cliente_j][cliente_i] + distancias[cliente_i][cliente_k] - distancias[cliente_j][cliente_k];
     } else {
         this->_distanciaTotal += costo_nuevo - costo_actual;
     }
-
-    return true;
 }
-
 
 void Route::imprimirRuta() const {
     cout << "Ruta: "; // O(1)

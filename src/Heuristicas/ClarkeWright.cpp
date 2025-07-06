@@ -2,7 +2,7 @@
 
 // Función auxiliar para obtener un vector de Saving dada un vector de distancias inicial,
 // ordenado de mayor a menor
-vector<Saving> calcularSavings(const vector<vector<double>>& distancias, int depotId) {
+vector<Saving> Heuristicas::calcularSavings(const vector<vector<double>>& distancias, int depotId) {
     vector<Saving> savings; // O(1)
     int n = distancias.size(); // O(1)
 
@@ -30,7 +30,7 @@ vector<Saving> calcularSavings(const vector<vector<double>>& distancias, int dep
 // Dado un cliente, encuentra la raíz padre de la ruta donde se encuentra el cliente
 // Compresión de ruta: para cada hijo de la raíz, actualizamos su padre a la raíz si no está hecho
 // Ejemplo: dado 1->1, 2->1, 3->2, 4->3, si ejecuto findPadre(3) termino teniendo 1->1, 2->1, 3->1, 4->1
-int findPadre(vector<int>& padres_ruta, int cliente) {
+int Heuristicas::findPadre(vector<int>& padres_ruta, int cliente) {
     if (padres_ruta[cliente] != cliente) {
         padres_ruta[cliente] = findPadre(padres_ruta, padres_ruta[cliente]); // compresión de ruta para todos los clientes conectados
     } 
@@ -42,7 +42,7 @@ int findPadre(vector<int>& padres_ruta, int cliente) {
 // unionFind nos ayudará a decidir cómo unir después las rutas de manera más óptima
 // devuelve una tupla con las dos raices, donde la primera es de la ruta a la que vamos a unir ambas rutas
 // y la segunda es de la ruta que borraremos
-tuple<int, int> unionFind(vector<int>& padres_ruta, vector<int>& rango_cliente, int i, int j) {
+tuple<int, int> Heuristicas::unionFind(vector<int>& padres_ruta, vector<int>& rango_cliente, int i, int j) {
     int raiz_i = findPadre(padres_ruta, i); // O(α(n))
     int raiz_j = findPadre(padres_ruta, j); // O(α(n))
     int rango_i = rango_cliente[raiz_i]; // O(1)
@@ -64,7 +64,7 @@ tuple<int, int> unionFind(vector<int>& padres_ruta, vector<int>& rango_cliente, 
 }
 // Complejidad total: O(α(n))
 
-bool chequeoSolapamiento(const Route& ruta_i, const Route& ruta_j, int i, int j) {
+bool Heuristicas::chequeoSolapamiento(const Route& ruta_i, const Route& ruta_j, int i, int j) {
     return ruta_i.getClientePadreId() != ruta_j.getClientePadreId() && // O(1) si son iguales son la misma ruta
         ruta_i.getClienteFinalId() == i && ruta_j.getClientePadreId() == j; // O(1) solapamiento
 }

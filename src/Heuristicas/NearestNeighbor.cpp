@@ -1,6 +1,6 @@
 #include "Heuristicas.h"
 
-vector<int> ordenarPorDistancias(const vector<double>& distancias) {
+vector<int> Heuristicas::ordenarPorDistancias(const vector<double>& distancias) {
     int n = distancias.size(); // O(1)
     vector<pair<double, int>> dist_con_id; // O(1) también guardo los ids para después invocarlo
     vector<int> clientes_ordenados(n + 1, 0); // O(N)
@@ -23,7 +23,7 @@ vector<int> ordenarPorDistancias(const vector<double>& distancias) {
 }
 // Complejidad total: O(N*logN)
 
-int clienteMinimoDistancia(const vector<double>& distanciasCliente, int id, const vector<int>& visitados, const vector<int>& demandas, int capacidadRestante) {
+int Heuristicas::clienteMinimoDistancia(const vector<double>& distanciasCliente, int id, const vector<int>& visitados, const vector<int>& demandas, int capacidadRestante) {
     int minCliente = -1; // O(1)
     double minDist = numeric_limits<double>::max(); // O(1) empiezo como inf
 

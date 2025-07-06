@@ -45,7 +45,7 @@ class Route {
             double costo_anterior_A, double costo_anterior_B, double costo_nuevo_A, double costo_nuevo_B); // O(1)
         // Pre: i debe ser cliente de la ruta actual, j debe ser cliente de otraRuta
         //void relocateCliente();
-        bool relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const std::vector<int>& demandas, const std::vector<std::vector<double>>& distancias);
+        void relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const vector<int>& demandas, const vector<std::vector<double>>& distancias);
 
         void imprimirRuta() const; // O(N)
 

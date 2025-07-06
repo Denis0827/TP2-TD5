@@ -13,19 +13,6 @@ void resolverCVRP(string algoritmo, string instancia, bool exportar = false, str
     
     Solution solucion;
 
-    const vector<string> algoritmos_validos = { 
-        "ClarkeWright", 
-        "NearestNeighbor", 
-        "ClarkeWright + Swap", 
-        "ClarkeWright + Relocate",
-        "NearestNeighbor + Swap",
-        "NearestNeighbor + Relocate",
-        "GRASP ClarkeWright + Swap",
-        "GRASP ClarkeWright + Relocate",
-        "GRASP NeareastNeighbor + Swap",
-        "GRASP NeareastNeighbor + Relocate" 
-    };
-
     if (algoritmo == "ClarkeWright") {
         solucion = heuristicas.clarkeWright(exportar);
     } else if (algoritmo == "NearestNeighbor") {
@@ -42,7 +29,19 @@ void resolverCVRP(string algoritmo, string instancia, bool exportar = false, str
     } else if (algoritmo == "NearestNeighbor + Swap" && criterio == "bestImprovement") {
         solucion = heuristicas.nearestNeighbor();
         heuristicas.swap(solucion, 1, exportar);
-    }
+    } else if (algoritmo == "ClarkeWright + Relocate" && criterio == "firstImprovement") {
+        solucion = heuristicas.clarkeWright();
+        heuristicas.relocate(solucion, 0, exportar);
+    } else if (algoritmo == "ClarkeWright + Relocate" && criterio == "bestImprovement") {
+        solucion = heuristicas.clarkeWright();
+        heuristicas.relocate(solucion, 1, exportar);
+    } else if (algoritmo == "NearestNeighbor + Relocate" && criterio == "firstImprovement") {
+        solucion = heuristicas.nearestNeighbor();
+        heuristicas.relocate(solucion, 0, exportar);
+    } else if (algoritmo == "NearestNeighbor + Relocate" && criterio == "bestImprovement") {
+        solucion = heuristicas.nearestNeighbor();
+        heuristicas.relocate(solucion, 1, exportar);
+    } 
 
     auto end = high_resolution_clock::now();
     auto duracion_us = duration_cast<microseconds>(end - start).count();
@@ -58,11 +57,17 @@ void resolverCVRP(string algoritmo, string instancia, bool exportar = false, str
 }
 
 int main() {
-    resolverCVRP("ClarkeWright", "instancias/2l-cvrp-0/E101D11r.dat", false);
-    resolverCVRP("NearestNeighbor", "instancias/2l-cvrp-0/E101D11r.dat", false);
-    resolverCVRP("ClarkeWright + Swap", "instancias/2l-cvrp-0/E101D11r.dat", false, "firstImprovement");
-    resolverCVRP("ClarkeWright + Swap", "instancias/2l-cvrp-0/E101D11r.dat", false, "bestImprovement");
-    resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E101D11r.dat", false, "firstImprovement");
-    resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E101D11r.dat", false, "bestImprovement");
+    resolverCVRP("ClarkeWright", "instancias/2l-cvrp-0/E045-04f.dat", false);
+    resolverCVRP("NearestNeighbor", "instancias/2l-cvrp-0/E045-04f.dat", false);
+
+    resolverCVRP("ClarkeWright + Swap", "instancias/2l-cvrp-0/E045-04f.dat", false, "firstImprovement");
+    resolverCVRP("ClarkeWright + Swap", "instancias/2l-cvrp-0/E045-04f.dat", false, "bestImprovement");
+    resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E045-04f.dat", false, "firstImprovement");
+    resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E045-04f.dat", false, "bestImprovement");
+
+    resolverCVRP("ClarkeWright + Relocate", "instancias/2l-cvrp-0/E045-04f.dat", false, "firstImprovement");
+    resolverCVRP("ClarkeWright + Relocate", "instancias/2l-cvrp-0/E045-04f.dat", false, "bestImprovement");
+    resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E045-04f.dat", false, "firstImprovement");
+    resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E045-04f.dat", false, "bestImprovement");
     return 0;
 }
