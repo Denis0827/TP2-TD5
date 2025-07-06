@@ -9,10 +9,9 @@ double Heuristicas::chequearMejoraRelocate(Route& rutaA, Route& rutaB, NodeRoute
     int cliente_k = destinoNext->id;
 
     double mejora = 0.0;
-    bool misma_ruta = rutaA.getRaiz()->siguiente == rutaB.getRaiz()->siguiente;
     bool excede_capacidad = false;
 
-    if (!misma_ruta) {
+    if (&rutaA != &rutaB) {
         if (rutaB.getDemandaTotal() + demandas[cliente_i] > rutaB.getCapacidadTotal()) {
             excede_capacidad = true;
         }
@@ -35,6 +34,13 @@ void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
     const vector<int>& demandas = this->_instancia.getDemands();
     const vector<tuple<int, Route*>>& rutas = solucion.getRutas();
     const vector<tuple<NodeRoute*, Route*>>& clientes_a_visitar = solucion.getAllClientesSol();
+
+    string algoritmo_goloso = solucion.getAlgoritmo();
+    if (criterio == 0) {
+        solucion.setAlgoritmo(algoritmo_goloso + " + Relocate (FirstImprovement)"); // O(1)
+    } else {
+        solucion.setAlgoritmo(algoritmo_goloso + " + Relocate (BestImprovement)"); // O(1)
+    }
 
     int numero_iteracion = 0;
     if (exportar) {
@@ -61,9 +67,6 @@ void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
                     clienteA == destinoPrev->siguiente  || // no tiene sentido que i = k porque pondriamos a i en la arista j->i que ya no existe
                     clienteA->siguiente == destinoPrev || destinoPrev->siguiente == clienteA) // ya estarian en esas posiciones
                     break;
-
-                if (rutaA != rutaB && rutaB->getDemandaTotal() + demandas[clienteA->id] > rutaB->getCapacidadTotal())
-                    continue;
 
                 double mejora = chequearMejoraRelocate(*rutaA, *rutaB, clienteA, destinoPrev, demandas, distancias);
 
@@ -99,6 +102,4 @@ void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
             }
         }
     }
-
-    solucion.setAlgoritmo(solucion.getAlgoritmo() + " + Relocate");
 }

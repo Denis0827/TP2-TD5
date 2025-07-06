@@ -34,21 +34,6 @@ class Solution {
 
         void imprimirSolution();
         void exportarSolutionParcial(const vector<Node>& nodos, int numero_iteracion);
-
-        // Constructor de copia
-        Solution(const Solution& other);
-    
-        // Operador de asignación
-        Solution& operator=(const Solution& other);
-    
-        // Destructor
-        ~Solution();
-    
-        // Método para obtener una ruta por índice
-        Route* getRutaByIndex(int index);
-    
-        // Método para obtener el costo total de la solución
-        double getCostoTotal() const;
 };
 
 #endif // SOLUTION_H

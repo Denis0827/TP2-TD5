@@ -9,6 +9,8 @@
 #include <string>
 #include <algorithm>
 #include <unordered_map>
+#include <random>
+#include <ctime>
 
 class Heuristicas {
     private: 
@@ -24,26 +26,22 @@ class Heuristicas {
         // Funciones auxiliares para NearestNeighbor
         vector<int> ordenarPorDistancias(const vector<double>& distancias);
         int clienteMinimoDistancia(const vector<double>& distanciasCliente, int id, 
-                                const vector<int>& visitados, const vector<int>& demandas, int capacidadRestante);
+            const vector<int>& visitados, const vector<int>& demandas, int capacidadRestante);
 
         // Funciones auxiliares para Swap
         double chequearMejoraSwap(Route& ruta_A, Route& ruta_B, NodeRoute* clienteA, NodeRoute* clienteB, 
-                                const vector<vector<double>>& distancias);
+            const vector<vector<double>>& distancias);
 
         // Funciones auxiliares para Relocate
         double chequearMejoraRelocate(Route& rutaA, Route& rutaB, NodeRoute* cliente, NodeRoute* destinoPrev, 
-                                const vector<int>& demandas, const vector<vector<double>>& distancias);
+            const vector<int>& demandas, const vector<vector<double>>& distancias);
 
         // Funciones auxiliares para GRASP
         vector<int> obtenerCandidatosRCL(const vector<double>& distanciasCliente, int id, 
-                                    const vector<int>& visitados, const vector<int>& demandas, 
-                                    int capacidadRestante, double alpha);
+            const vector<int>& visitados, const vector<int>& demandas, int capacidadRestante, double alpha);
     
         int seleccionarPrimerClienteRCL(const vector<int>& clientes_depot_ordenados, 
-                                   const vector<int>& visitados, int n, double alpha);
-    
-        Solution busquedaLocalRelocate(Solution& solucion, const vector<vector<double>>& distancias, 
-                                  const vector<int>& demandas);
+            const vector<int>& visitados, int n, double alpha);
 
     public:
         // inicializa _instancia usando el constructor adecuado
@@ -58,10 +56,7 @@ class Heuristicas {
         // criterio: 0 -> First Improvement, 1 -> Best Improvement
 
         // Método GRASP para Nearest Neighbor
-        // alpha: parámetro de randomización (0.0 = completamente greedy, 1.0 = completamente random)
-        // maxIteraciones: número máximo de iteraciones GRASP
-        Solution nearestNeighborGRASP(double alpha = 0.3, int maxIteraciones = 100);
-
+        Solution graspNearestNeighbor(int rcl_size = 3, int seed = -1); // O(N^2)
 };
 
 #endif // HEURISTICAS_H

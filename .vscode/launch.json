@@ -3,10 +3,10 @@
     "configurations": [
         
         {
-            "name": "Debug Heuristicas",
+            "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/heuristicas",
+            "program": "${workspaceFolder}/main",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

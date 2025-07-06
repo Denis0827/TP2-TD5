@@ -41,15 +41,12 @@ class Route {
 
         void unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double dis_depj); // O(1)
         // chequear dist_ij
-        void swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, int demandaA, int demandaB, 
-            double costo_anterior_A, double costo_anterior_B, double costo_nuevo_A, double costo_nuevo_B); // O(1)
+        void swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, const vector<vector<double>>& distancias); // O(1)
         // Pre: i debe ser cliente de la ruta actual, j debe ser cliente de otraRuta
         //void relocateCliente();
         void relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const vector<int>& demandas, const vector<std::vector<double>>& distancias);
 
         void imprimirRuta() const; // O(N)
-
-        Route(const Route& other); // Constructor de copia
 
 };
 

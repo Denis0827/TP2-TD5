@@ -1,126 +1,112 @@
 #include "Heuristicas.h"
-#include <vector>
-#include <random>
-#include <algorithm>
-#include <limits>
-#include <iostream>
-using namespace std;
 
-// Definición de la función auxiliar ordenarPorDistancias
-vector<int> ordenarPorDistancias(const vector<double>& distancias) {
-    int n = distancias.size();
-    vector<pair<double, int>> dist_con_id;
-    vector<int> clientes_ordenados(n + 1, 0);
-
-    for (int i = 1; i < n; ++i) {
-        dist_con_id.push_back({distancias[i], i});
-    }
-
-    sort(dist_con_id.begin(), dist_con_id.end());
-
-    int id = 1;
-    for (auto& p : dist_con_id) {
-        clientes_ordenados[id++] = p.second;
-    }
-
-    return clientes_ordenados;
-}
-
-// Definición de las funciones privadas de Heuristicas
-
-vector<int> Heuristicas::obtenerCandidatosRCL(const vector<double>& distanciasCliente, int id, 
-                                    const vector<int>& visitados, const vector<int>& demandas, 
-                                    int capacidadRestante, double alpha) {
+// Función auxiliar para obtener candidatos aleatorios de la RCL
+int clienteAleatorioRCL (const vector<double>& distanciasCliente, int id, const vector<int>& visitados, const vector<int>& demandas, int capacidadRestante, int rcl_size, mt19937& gen) {
     vector<pair<double, int>> candidatos;
 
-    for (int i = 1; i < (int)distanciasCliente.size(); i++) {
-        if (!visitados[i] && demandas[i] <= capacidadRestante && i != id) {
+    // Buscar todos los candidatos factibles
+    for (int i = 1; i < static_cast<int>(distanciasCliente.size()); i++) {
+        if (!visitados[i] && demandas[i] <= capacidadRestante && i != id)  {
             candidatos.push_back({distanciasCliente[i], i});
         }
     }
 
     if (candidatos.empty()) {
-        return vector<int>();
+        return -1; // No hay candidatos factibles
     }
 
+    // Ordenar candidatos por distancia (ascendente)
     sort(candidatos.begin(), candidatos.end());
 
-    double minDist = candidatos[0].first;
-    double maxDist = candidatos.back().first;
-    double threshold = minDist + alpha * (maxDist - minDist);
+    // Crear RCL con los mejores candidatos (hasta rcl_size)
+    int rcl_actual_size = min(rcl_size, static_cast<int>(candidatos.size()));
 
-    vector<int> rcl;
-    for (const auto& candidato : candidatos) {
-        if (candidato.first <= threshold) {
-            rcl.push_back(candidato.second);
-        }
-    }
+    // Seleccionar aleatoriamente uno de los candidatos en la RCL
+    uniform_int_distribution<int> dist(0, rcl_actual_size - 1);
+    int indice_elegido = dist(gen);
 
-    return rcl;
+    return candidatos[indice_elegido].second;
 }
 
-int Heuristicas::seleccionarPrimerClienteRCL(const vector<int>& clientes_depot_ordenados, 
-                                   const vector<int>& visitados, int n, double alpha) {
-    vector<int> candidatos_disponibles;
+Solution Heuristicas::graspNearestNeighbor(int rcl_size, int seed) {
+    const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix(); // O(1)
+    const vector<int>& demandas = this->_instancia.getDemands(); // O(1)
+    int depot = this->_instancia.getDepotId(); // O(1)
+    int capacidad = this->_instancia.getCapacity(); // O(1)
+    int n = this->_instancia.getDimension(); // O(1)
+    int k = this->_instancia.getNumVehicles(); // O(1)
 
+    // INicializar generador de números aleatorios
+    mt19937 gen;
+    if (seed == -1) {
+        gen.seed(time(nullptr)); // Usar tiempo actual si no se especifica semilla
+    } else {
+        gen.seed(seed); // Usás la misma seed → mismo resultado
+    }
+
+    // Crear RCL para selección del primer cliente de cada ruta
+    vector<pair<double, int>> candidatos_iniciales;
     for (int i = 1; i < n; i++) {
-        if (visitados[clientes_depot_ordenados[i]] == 0) {
-            candidatos_disponibles.push_back(clientes_depot_ordenados[i]);
+        candidatos_iniciales.push_back({distancias[depot][i], i});
+    }
+    sort(candidatos_iniciales.begin(), candidatos_iniciales.end());
+
+    // para saber cuando todos los clientes tienen una ruta
+    int clientes_no_visitados = n - 1; // O(1) sin contar el deposito
+    vector<int> visitados (n + 1, 0); // O(N) cada i del vector es el cliente i
+    visitados[depot] = 1; // O(1) no queremos considerar el depot, solo clientes
+
+    Solution solucion = Solution(k, "GRASP-NearestNeighbor", this->_nombreInstancia);
+
+    while (clientes_no_visitados > 0) {
+        // Seleccionar primer cliente de la ruta usando RCL
+        int primer_cliente_sin_ruta = -1;
+
+        // Crear RCL con clientes no visitados más cercanos al depot
+        vector<pair<double, int>> rcl_inicial;
+        for (const auto& candidato : candidatos_iniciales) {
+            if (!visitados[candidato.second]) {
+                rcl_inicial.push_back(candidato);
+                if (static_cast<int>(rcl_inicial.size()) >= rcl_size) {
+                    break; // Solo tomamos los primeros rcl_size candidatos
+                }
+            }
         }
-    }
 
-    if (candidatos_disponibles.empty()) {
-        return -1;
-    }
+        if (!rcl_inicial.empty()) {
+            // Seleccionar aleatoriamente del RCL inicial
+            uniform_int_distribution<int> dist_inicial(0, rcl_inicial.size() - 1);
+            int indice_elegido = dist_inicial(gen);
+            primer_cliente_sin_ruta = rcl_inicial[indice_elegido].second;
 
-    int rcl_size = max(1, static_cast<int>(candidatos_disponibles.size() * alpha));
-
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<> dis(0, rcl_size - 1);
-
-    return candidatos_disponibles[dis(gen)];
-}
-
-Solution Heuristicas::nearestNeighborGRASP(double alpha, int maxIteraciones) {
-    const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix();
-    const vector<int>& demandas = this->_instancia.getDemands();
-    int depot = this->_instancia.getDepotId();
-    int capacidad = this->_instancia.getCapacity();
-    int n = this->_instancia.getDimension();
-    int k = this->_instancia.getNumVehicles();
-
-    Solution mejorSolucion(k, "GRASP-NearestNeighbor");
-    double mejorCosto = numeric_limits<double>::max();
-
-    for (int iter = 0; iter < maxIteraciones; iter++) {
-        vector<int> clientes_depot_ordenados = ordenarPorDistancias(distancias[depot]);
-
-        int clientes_no_visitados = n - 1;
-        vector<int> visitados(n + 1, 0);
-        visitados[depot] = 1;
-
-        Solution solucionActual(k, "GRASP-NearestNeighbor");
-
-        // Aquí solo creamos una ruta con un primer cliente randomizado para test
-        int primer_cliente = seleccionarPrimerClienteRCL(clientes_depot_ordenados, visitados, n, alpha);
-
-        if (primer_cliente == -1) break;
-
-        visitados[primer_cliente] = 1;
-        clientes_no_visitados--;
-
-        Route* rutaActual = new Route(capacidad, depot);
-        rutaActual->agregarClienteInicio(primer_cliente, demandas[primer_cliente], distancias[depot][primer_cliente]);
-
-        solucionActual.agregarRuta(rutaActual);
-
-        double costoActual = solucionActual.getCostoTotal();
-        if (costoActual < mejorCosto) {
-            mejorCosto = costoActual;
-            mejorSolucion = solucionActual;
+            visitados[primer_cliente_sin_ruta] = 1;
+            clientes_no_visitados--;
         }
-    }
+        Route* rutaActual = new Route(capacidad, depot); // O(1) creamos la ruta nueva
+        rutaActual->agregarClienteInicio(primer_cliente_sin_ruta, demandas[primer_cliente_sin_ruta],
+            distancias[depot][primer_cliente_sin_ruta]); // O(1) agregamos el cliente encontrado
 
-    return mejorSolucion;
+        int actual = primer_cliente_sin_ruta; // O(1)
+        bool puedeAgregar = true; // O(1) me dice si encuentra clientes que se pueden agregar a la ruta
+
+        while (puedeAgregar != false) { // O(1)
+            int candidato = clienteAleatorioRCL(distancias[actual], actual, visitados, demandas, 
+                rutaActual->getCapacidadRestante(), rcl_size, gen);
+
+            if (candidato != -1) { // O(1)
+                // Agregar el candidato a la ruta
+                rutaActual->agregarClienteFinal(candidato, demandas[candidato], distancias[actual][depot], distancias[actual][candidato], 
+                    distancias[candidato][depot]); // O(1)
+                
+                visitados[candidato] = 1; // O(1) ya visité entonces el candidato
+                actual = candidato; // O(1) ahora busco el minimo cliente desde el candidato (candidato del candidato)
+                clientes_no_visitados--; // O(1)
+            } else {
+                puedeAgregar = false; // O(1) si no encontré ningun candidato, la ruta esta hecha
+            }
+            
+        }
+        solucion.agregarRuta(rutaActual); // O(1) agrego ruta a la solucion
+    }
+    return solucion;
 }

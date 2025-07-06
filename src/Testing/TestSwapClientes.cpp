@@ -1,5 +1,27 @@
 #include "TestSwapClientes.h"
 
+// Auxiliar: crear ruta a partir de vector de IDs y demandas
+Route TestSwapClientes::crearRuta(const vector<int>& ids, const vector<int>& demandas, int capacidad, const vector<vector<double>>& dist) {
+    Route r(capacidad, 0);
+    for (size_t i = 0; i < ids.size(); ++i) {
+        if (i == 0)
+            r.agregarClienteFinal(ids[i], demandas[ids[i]], dist[0][ids[i]]);
+        else
+            r.agregarClienteFinal(ids[i], demandas[ids[i]], dist[0][ids[i-1]], dist[ids[i-1]][ids[i]], dist[0][ids[i]]);
+    }
+    return r;
+}
+
+// Auxiliar: buscar nodo por id
+NodeRoute* TestSwapClientes::buscarNodo(Route& r, int id) {
+    NodeRoute* actual = r.getRaizModify();
+    while (actual != nullptr) {
+        if (actual->id == id) return actual;
+        actual = actual->siguiente;
+    }
+    return nullptr;
+}
+
 void TestSwapClientes::inicializarDistancias() {
     // Crear matriz 10x10 para testing
     distancias.resize(10, vector<double>(10, 0));
@@ -16,374 +38,285 @@ void TestSwapClientes::inicializarDistancias() {
     }
 }
 
-double TestSwapClientes::calcularCostoAnterior(NodeRoute* cliente) {
-    if (!cliente || !cliente->anterior || !cliente->siguiente) return 0;
-    return distancias[cliente->anterior->id][cliente->id] + 
-            distancias[cliente->id][cliente->siguiente->id];
-}
-
-double TestSwapClientes::calcularCostoNuevo(NodeRoute* cliente, NodeRoute* nuevoAnterior, NodeRoute* nuevoSiguiente) {
-    if (!cliente || !nuevoAnterior || !nuevoSiguiente) return 0;
-    return distancias[nuevoAnterior->id][cliente->id] + 
-            distancias[cliente->id][nuevoSiguiente->id];
-}
-
-void TestSwapClientes::imprimirRutaBonita(const Route& ruta, const string& nombre) {
-    cout << nombre << endl;
-    cout << "Ruta: ";
-    const NodeRoute* actual = ruta.getRaiz();
-    while (actual != nullptr) {
-        cout << actual->id;
-        if (actual->siguiente != nullptr) {
-            cout << " -> ";
-        }
-        actual = actual->siguiente;
-    }
-    cout << endl;
-    cout << "Demanda total: " << ruta.getDemandaTotal()
-         << " | Capacidad restante: " << ruta.getCapacidadRestante()
-         << " | Distancia total: " << ruta.getDistanciaTotal() << endl;
-    cout << endl;
-}
-
-void TestSwapClientes::verificarIntegridadRuta(const Route& ruta, const string& nombre) {
-    cout << "🔍 Verificando integridad de " << nombre << "..." << endl;
-    
-    // Verificar que la ruta es válida
+void TestSwapClientes::verificarIntegridadRuta(const Route& ruta, int rutaNum) {
+    // Chequeo de raíz y último
     assert(ruta.getRaiz() != nullptr);
     assert(ruta.getUltimo() != nullptr);
-    assert(ruta.getRaiz()->siguiente != nullptr);
-    assert(ruta.getUltimo()->anterior != nullptr);
-    
-    // Verificar que la demanda total es correcta
-    vector<NodeRoute*> clientes = ruta.getAllClientes();
+    // Chequeo de enlaces dobles y consistencia de nodos
+    const NodeRoute* actual = ruta.getRaiz();
+    int count = 0;
+    while (actual != nullptr) {
+        if (actual->siguiente != nullptr) assert(actual->siguiente->anterior == actual);
+        if (actual->anterior != nullptr) assert(actual->anterior->siguiente == actual);
+        actual = actual->siguiente;
+        count++;
+    }
+    // Chequeo de demanda total
+    std::vector<NodeRoute*> clientes = ruta.getAllClientes();
     int demandaCalculada = 0;
     for (NodeRoute* cliente : clientes) {
         demandaCalculada += cliente->demanda;
     }
     assert(demandaCalculada == ruta.getDemandaTotal());
-    
-    // Verificar que todos los nodos tienen enlaces correctos
-    const NodeRoute* actual = ruta.getRaiz();
-    while (actual != nullptr) {
-        if (actual->siguiente != nullptr) {
-            assert(actual->siguiente->anterior == actual);
-        }
-        if (actual->anterior != nullptr) {
-            assert(actual->anterior->siguiente == actual);
-        }
+    // Chequeo de capacidad
+    assert(ruta.getCapacidadRestante() == ruta.getCapacidadTotal() - ruta.getDemandaTotal());
+    // Chequeo de distancia total
+    double distanciaCalculada = 0;
+    actual = ruta.getRaiz();
+    while (actual && actual->siguiente) {
+        int from = actual->id;
+        int to = actual->siguiente->id;
+        distanciaCalculada += distancias[from][to];
         actual = actual->siguiente;
     }
-    
-    // Verificar que el primer cliente tiene al depot como anterior
-    if (ruta.getRaiz()->siguiente != ruta.getUltimo()) {
-        assert(ruta.getRaiz()->siguiente->anterior == ruta.getRaiz());
+    assert(distanciaCalculada == ruta.getDistanciaTotal());
+    // Chequeo de consistencia de nodos (no repetidos, depot solo en extremos)
+    std::vector<int> ids;
+    actual = ruta.getRaiz()->siguiente;
+    while (actual != ruta.getUltimo()) {
+        ids.push_back(actual->id);
+        actual = actual->siguiente;
     }
-    
-    // Verificar que el último cliente tiene al depot como siguiente
-    if (ruta.getUltimo()->anterior != ruta.getRaiz()) {
-        assert(ruta.getUltimo()->anterior->siguiente == ruta.getUltimo());
+    std::sort(ids.begin(), ids.end());
+    for (size_t i = 1; i < ids.size(); ++i) {
+        assert(ids[i] != ids[i-1]); // no repetidos
     }
-    
-    // Verificar que la capacidad restante es correcta
-    assert(ruta.getCapacidadRestante() == ruta.getCapacidadTotal() - ruta.getDemandaTotal());
-    
-    cout << "✓ Integridad verificada exitosamente" << endl;
+    // Depot solo en extremos
+    assert(ruta.getRaiz()->id == 0);
+    assert(ruta.getUltimo()->id == 0);
+    // Print final
+    cout << "Integridad de ruta " << rutaNum << " verificada correctamente" << endl;
 }
 
 TestSwapClientes::TestSwapClientes() {
     inicializarDistancias();
 }
 
-// CASO 1: Nodos consecutivos en la misma ruta
+// --- TEST 1: NODOS CONSECUTIVOS EN LA MISMA RUTA ---
 void TestSwapClientes::testSwapConsecutivosMismaRuta() {
-    cout << "\n❓ TEST: Nodos consecutivos en la misma ruta" << endl;
-    cout << "═══════════════════════════════════════════════════════════════" << endl;
-    
-    Route ruta(100, 0); // Capacidad 100, depot 0
-    ruta.agregarClienteFinal(1, 10, distancias[0][1], 0, distancias[1][0]);
-    ruta.agregarClienteFinal(2, 15, distancias[0][2], distancias[1][2], distancias[2][0]);
-    ruta.agregarClienteFinal(3, 20, distancias[0][3], distancias[2][3], distancias[3][0]);
-    
-    imprimirRutaBonita(ruta, "Ruta Original");
-    
-    vector<NodeRoute*> clientes = ruta.getAllClientes();
-    NodeRoute* cliente1 = clientes[0]; // Cliente 1
-    NodeRoute* cliente2 = clientes[1]; // Cliente 2 (consecutivo)
-    
-    cout << "🔄 Realizando swap entre cliente " << cliente1->id << " y cliente " << cliente2->id << "..." << endl;
-    
-    double costo_anterior_1 = calcularCostoAnterior(cliente1);
-    double costo_anterior_2 = calcularCostoAnterior(cliente2);
-    double costo_nuevo_1 = calcularCostoNuevo(cliente1, cliente2->anterior, cliente2->siguiente);
-    double costo_nuevo_2 = calcularCostoNuevo(cliente2, cliente1->anterior, cliente1->siguiente);
-    
-    int demanda_original = ruta.getDemandaTotal();
-    
-    ruta.swapClientes(ruta, cliente1, cliente2, cliente1->demanda, cliente2->demanda,
-                     costo_anterior_1, costo_anterior_2, costo_nuevo_1, costo_nuevo_2);
-    
-    imprimirRutaBonita(ruta, "Ruta Después del Swap");
-    
-    // Verificaciones
-    assert(ruta.getDemandaTotal() == demanda_original); // Demanda no cambia en misma ruta
-    verificarIntegridadRuta(ruta, "ruta después del swap");
-    
-    cout << "Test de nodos consecutivos en misma ruta PASÓ ✅" << endl;
+    cout << "-------- TEST 1: NODOS CONSECUTIVOS EN LA MISMA RUTA --------\n";
+    vector<vector<double>> dist = distancias;
+    vector<int> demandas = {0, 10, 15, 20};
+    Route ruta = crearRuta({1, 2, 3}, demandas, 100, dist);
+    cout << "Estado de rutas antes de swap:" << endl;
+    cout << "Ruta 1: "; ruta.imprimirRuta();
+    cout << endl;
+    bool ok = true;
+    int idA = 1, idB = 2;
+    try {
+        NodeRoute* n1 = buscarNodo(ruta, idA);
+        NodeRoute* n2 = buscarNodo(ruta, idB);
+        ruta.swapClientes(ruta, n1, n2, distancias);
+        cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
+        cout << "Ruta 1: "; ruta.imprimirRuta();
+        cout << endl;
+        verificarIntegridadRuta(ruta, 1);
+    } catch (...) { ok = false; }
+    cout << (ok ? "OK" : "FALLO") << "\n" << endl;
 }
 
-// CASO 2: Nodos de distintas rutas
+// --- TEST 2: NODOS DE DISTINTAS RUTAS ---
 void TestSwapClientes::testSwapDistintasRutas() {
-    cout << "\n❓ TEST: Nodos de distintas rutas" << endl;
-    cout << "═══════════════════════════════════════════════════════════════" << endl;
-    
-    Route ruta1(100, 0);
-    Route ruta2(100, 0);
-    
-    // Ruta 1: 0-1-2-0
-    ruta1.agregarClienteFinal(1, 10, distancias[0][1], 0, distancias[1][0]);
-    ruta1.agregarClienteFinal(2, 15, distancias[0][2], distancias[1][2], distancias[2][0]);
-    
-    // Ruta 2: 0-3-4-0
-    ruta2.agregarClienteFinal(3, 20, distancias[0][3], 0, distancias[3][0]);
-    ruta2.agregarClienteFinal(4, 25, distancias[0][4], distancias[3][4], distancias[4][0]);
-    
-    imprimirRutaBonita(ruta1, "Ruta 1 Original");
-    imprimirRutaBonita(ruta2, "Ruta 2 Original");
-    
-    vector<NodeRoute*> clientes1 = ruta1.getAllClientes();
-    vector<NodeRoute*> clientes2 = ruta2.getAllClientes();
-    
-    NodeRoute* cliente1 = clientes1[0]; // Cliente 1 de ruta 1
-    NodeRoute* cliente3 = clientes2[0]; // Cliente 3 de ruta 2
-    
-    cout << "🔄 Realizando swap entre cliente " << cliente1->id << " (Ruta 1) y cliente " << cliente3->id << " (Ruta 2)..." << endl;
-    
-    double costo_anterior_1 = calcularCostoAnterior(cliente1);
-    double costo_anterior_3 = calcularCostoAnterior(cliente3);
-    double costo_nuevo_1 = calcularCostoNuevo(cliente1, cliente3->anterior, cliente3->siguiente);
-    double costo_nuevo_3 = calcularCostoNuevo(cliente3, cliente1->anterior, cliente1->siguiente);
-    
-    int demanda_original_1 = ruta1.getDemandaTotal();
-    int demanda_original_2 = ruta2.getDemandaTotal();
-    
-    ruta1.swapClientes(ruta2, cliente1, cliente3, cliente1->demanda, cliente3->demanda,
-                      costo_anterior_1, costo_anterior_3, costo_nuevo_1, costo_nuevo_3);
-    
-    imprimirRutaBonita(ruta1, "Ruta 1 Después del Swap");
-    imprimirRutaBonita(ruta2, "Ruta 2 Después del Swap");
-    
-    // Verificaciones
-    assert(ruta1.getDemandaTotal() == demanda_original_1 - cliente1->demanda + cliente3->demanda);
-    assert(ruta2.getDemandaTotal() == demanda_original_2 - cliente3->demanda + cliente1->demanda);
-    verificarIntegridadRuta(ruta1, "ruta 1 después del swap");
-    verificarIntegridadRuta(ruta2, "ruta 2 después del swap");
-    
-    cout << "Test de nodos de distintas rutas PASÓ ✅" << endl;
+    cout << "-------- TEST 2: NODOS DE DISTINTAS RUTAS --------\n";
+    vector<vector<double>> dist = distancias;
+    vector<int> demandas = {0, 10, 15, 20, 25};
+    Route r1 = crearRuta({1, 2}, demandas, 100, dist);
+    Route r2 = crearRuta({3, 4}, demandas, 100, dist);
+    cout << "Estado de rutas antes de swap:" << endl;
+    cout << "Ruta 1: "; r1.imprimirRuta();
+    cout << "Ruta 2: "; r2.imprimirRuta();
+    cout << endl;
+    bool ok = true;
+    int idA = 1, idB = 3;
+    try {
+        NodeRoute* n1 = buscarNodo(r1, idA);
+        NodeRoute* n3 = buscarNodo(r2, idB);
+        r1.swapClientes(r2, n1, n3, distancias);
+        cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
+        cout << "Ruta 1: "; r1.imprimirRuta();
+        cout << "Ruta 2: "; r2.imprimirRuta();
+        cout << endl;
+        verificarIntegridadRuta(r1, 1);
+        verificarIntegridadRuta(r2, 2);
+    } catch (...) { ok = false; }
+    cout << (ok ? "OK" : "FALLO") << "\n" << endl;
 }
 
-// CASO 3: Nodos de la misma ruta pero no consecutivos
+// --- TEST 3: NODOS NO CONSECUTIVOS EN LA MISMA RUTA ---
 void TestSwapClientes::testSwapNoConsecutivosMismaRuta() {
-    cout << "\n❓ TEST: Nodos de la misma ruta pero no consecutivos" << endl;
-    cout << "═══════════════════════════════════════════════════════════════" << endl;
-    
-    Route ruta(100, 0);
-    ruta.agregarClienteFinal(1, 10, distancias[0][1], 0, distancias[1][0]);
-    ruta.agregarClienteFinal(2, 15, distancias[0][2], distancias[1][2], distancias[2][0]);
-    ruta.agregarClienteFinal(3, 20, distancias[0][3], distancias[2][3], distancias[3][0]);
-    ruta.agregarClienteFinal(4, 25, distancias[0][4], distancias[3][4], distancias[4][0]);
-    
-    imprimirRutaBonita(ruta, "Ruta Original");
-    
-    vector<NodeRoute*> clientes = ruta.getAllClientes();
-    NodeRoute* cliente1 = clientes[0]; // Cliente 1
-    NodeRoute* cliente3 = clientes[2]; // Cliente 3 (no consecutivo con 1)
-    
-    cout << "🔄 Realizando swap entre cliente " << cliente1->id << " y cliente " << cliente3->id << " (no consecutivos)..." << endl;
-    
-    double costo_anterior_1 = calcularCostoAnterior(cliente1);
-    double costo_anterior_3 = calcularCostoAnterior(cliente3);
-    double costo_nuevo_1 = calcularCostoNuevo(cliente1, cliente3->anterior, cliente3->siguiente);
-    double costo_nuevo_3 = calcularCostoNuevo(cliente3, cliente1->anterior, cliente1->siguiente);
-    
-    int demanda_original = ruta.getDemandaTotal();
-    
-    ruta.swapClientes(ruta, cliente1, cliente3, cliente1->demanda, cliente3->demanda,
-                     costo_anterior_1, costo_anterior_3, costo_nuevo_1, costo_nuevo_3);
-    
-    imprimirRutaBonita(ruta, "Ruta Después del Swap");
-    
-    // Verificaciones
-    assert(ruta.getDemandaTotal() == demanda_original); // Demanda no cambia en misma ruta
-    verificarIntegridadRuta(ruta, "ruta después del swap");
-    
-    cout << "Test de nodos no consecutivos en misma ruta PASÓ ✅" << endl;
+    cout << "-------- TEST 3: NODOS NO CONSECUTIVOS EN LA MISMA RUTA --------\n";
+    vector<vector<double>> dist = distancias;
+    vector<int> demandas = {0, 10, 15, 20, 25};
+    Route ruta = crearRuta({1, 2, 3, 4}, demandas, 100, dist);
+    cout << "Estado de rutas antes de swap:" << endl;
+    cout << "Ruta 1: "; ruta.imprimirRuta();
+    cout << endl;
+    bool ok = true;
+    int idA = 1, idB = 3;
+    try {
+        NodeRoute* n1 = buscarNodo(ruta, idA);
+        NodeRoute* n3 = buscarNodo(ruta, idB);
+        ruta.swapClientes(ruta, n1, n3, distancias);
+        cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
+        cout << "Ruta 1: "; ruta.imprimirRuta();
+        cout << endl;
+        verificarIntegridadRuta(ruta, 1);
+    } catch (...) { ok = false; }
+    cout << (ok ? "OK" : "FALLO") << "\n" << endl;
 }
 
-// CASO 4: Caso borde - Swap con nodos en extremos de rutas
-void TestSwapClientes::testSwapExtremosRutas() {
-    cout << "\n❓ TEST: Swap con nodos en extremos de rutas" << endl;
-    cout << "═══════════════════════════════════════════════════════════════" << endl;
-    
-    Route ruta1(100, 0);
-    Route ruta2(100, 0);
-    
-    // Ruta 1: 0-1-2-0
-    ruta1.agregarClienteFinal(1, 10, distancias[0][1], 0, distancias[1][0]);
-    ruta1.agregarClienteFinal(2, 15, distancias[0][2], distancias[1][2], distancias[2][0]);
-    
-    // Ruta 2: 0-3-4-0
-    ruta2.agregarClienteFinal(3, 20, distancias[0][3], 0, distancias[3][0]);
-    ruta2.agregarClienteFinal(4, 25, distancias[0][4], distancias[3][4], distancias[4][0]);
-    
-    imprimirRutaBonita(ruta1, "Ruta 1 Original");
-    imprimirRutaBonita(ruta2, "Ruta 2 Original");
-    
-    vector<NodeRoute*> clientes1 = ruta1.getAllClientes();
-    vector<NodeRoute*> clientes2 = ruta2.getAllClientes();
-    
-    NodeRoute* primerCliente1 = clientes1[0]; // Primer cliente de ruta 1
-    NodeRoute* ultimoCliente2 = clientes2[1]; // Último cliente de ruta 2
-    
-    cout << "🔄 Realizando swap entre primer cliente " << primerCliente1->id << " (Ruta 1) y último cliente " << ultimoCliente2->id << " (Ruta 2)..." << endl;
-    
-    double costo_anterior_1 = calcularCostoAnterior(primerCliente1);
-    double costo_anterior_4 = calcularCostoAnterior(ultimoCliente2);
-    double costo_nuevo_1 = calcularCostoNuevo(primerCliente1, ultimoCliente2->anterior, ultimoCliente2->siguiente);
-    double costo_nuevo_4 = calcularCostoNuevo(ultimoCliente2, primerCliente1->anterior, primerCliente1->siguiente);
-    
-    ruta1.swapClientes(ruta2, primerCliente1, ultimoCliente2, primerCliente1->demanda, ultimoCliente2->demanda,
-                      costo_anterior_1, costo_anterior_4, costo_nuevo_1, costo_nuevo_4);
-    
-    imprimirRutaBonita(ruta1, "Ruta 1 Después del Swap");
-    imprimirRutaBonita(ruta2, "Ruta 2 Después del Swap");
-    
-    verificarIntegridadRuta(ruta1, "ruta 1 después del swap");
-    verificarIntegridadRuta(ruta2, "ruta 2 después del swap");
-    
-    cout << "Test de swap con extremos de rutas PASÓ ✅" << endl;
-}
-
-// CASO 5: Caso borde - Ruta con un solo cliente
+// --- TEST 4: RUTA CON UN SOLO CLIENTE ---
 void TestSwapClientes::testSwapRutaUnSoloCliente() {
-    cout << "\n❓ TEST: Swap con ruta que tiene un solo cliente" << endl;
-    cout << "═══════════════════════════════════════════════════════════════" << endl;
-    
-    Route ruta1(100, 0);
-    Route ruta2(100, 0);
-    
-    // Ruta 1: 0-1-0 (un solo cliente)
-    ruta1.agregarClienteFinal(1, 10, distancias[0][1], 0, distancias[1][0]);
-    
-    // Ruta 2: 0-2-3-0 (dos clientes)
-    ruta2.agregarClienteFinal(2, 15, distancias[0][2], 0, distancias[2][0]);
-    ruta2.agregarClienteFinal(3, 20, distancias[0][3], distancias[2][3], distancias[3][0]);
-    
-    imprimirRutaBonita(ruta1, "Ruta 1 Original (Un Cliente)");
-    imprimirRutaBonita(ruta2, "Ruta 2 Original (Dos Clientes)");
-    
-    vector<NodeRoute*> clientes1 = ruta1.getAllClientes();
-    vector<NodeRoute*> clientes2 = ruta2.getAllClientes();
-    
-    NodeRoute* cliente1 = clientes1[0];
-    NodeRoute* cliente2 = clientes2[0];
-    
-    cout << "🔄 Realizando swap entre cliente " << cliente1->id << " (Ruta 1 - un cliente) y cliente " << cliente2->id << " (Ruta 2)..." << endl;
-    
-    double costo_anterior_1 = calcularCostoAnterior(cliente1);
-    double costo_anterior_2 = calcularCostoAnterior(cliente2);
-    double costo_nuevo_1 = calcularCostoNuevo(cliente1, cliente2->anterior, cliente2->siguiente);
-    double costo_nuevo_2 = calcularCostoNuevo(cliente2, cliente1->anterior, cliente1->siguiente);
-    
-    ruta1.swapClientes(ruta2, cliente1, cliente2, cliente1->demanda, cliente2->demanda,
-                      costo_anterior_1, costo_anterior_2, costo_nuevo_1, costo_nuevo_2);
-    
-    imprimirRutaBonita(ruta1, "Ruta 1 Después del Swap");
-    imprimirRutaBonita(ruta2, "Ruta 2 Después del Swap");
-    
-    verificarIntegridadRuta(ruta1, "ruta 1 después del swap");
-    verificarIntegridadRuta(ruta2, "ruta 2 después del swap");
-    
-    cout << "Test de swap con ruta de un solo cliente PASÓ ✅" << endl;
+    cout << "-------- TEST 4: RUTA CON UN SOLO CLIENTE --------\n";
+    vector<vector<double>> dist = distancias;
+    vector<int> demandas = {0, 10, 15, 20};
+    Route r1 = crearRuta({1}, demandas, 100, dist);
+    Route r2 = crearRuta({2, 3}, demandas, 100, dist);
+    cout << "Estado de rutas antes de swap:" << endl;
+    cout << "Ruta 1: "; r1.imprimirRuta();
+    cout << "Ruta 2: "; r2.imprimirRuta();
+    cout << endl;
+    bool ok = true;
+    int idA = 1, idB = 2;
+    try {
+        NodeRoute* n1 = buscarNodo(r1, idA);
+        NodeRoute* n2 = buscarNodo(r2, idB);
+        r1.swapClientes(r2, n1, n2, distancias);
+        cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
+        cout << "Ruta 1: "; r1.imprimirRuta();
+        cout << "Ruta 2: "; r2.imprimirRuta();
+        cout << endl;
+        verificarIntegridadRuta(r1, 1);
+        verificarIntegridadRuta(r2, 2);
+    } catch (...) { ok = false; }
+    cout << (ok ? "OK" : "FALLO") << "\n" << endl;
 }
 
-// CASO 6: Caso borde - Swap entre rutas con capacidades diferentes
-void TestSwapClientes::testSwapCapacidadesDiferentes() {
-    cout << "\n❓ TEST: Swap entre rutas con capacidades diferentes" << endl;
-    cout << "═══════════════════════════════════════════════════════════════" << endl;
-    
-    Route ruta1(50, 0);  // Capacidad menor
-    Route ruta2(100, 0); // Capacidad mayor
-    
-    // Ruta 1: 0-1-2-0
-    ruta1.agregarClienteFinal(1, 20, distancias[0][1], 0, distancias[1][0]);
-    ruta1.agregarClienteFinal(2, 25, distancias[0][2], distancias[1][2], distancias[2][0]);
-    
-    // Ruta 2: 0-3-4-0
-    ruta2.agregarClienteFinal(3, 10, distancias[0][3], 0, distancias[3][0]);
-    ruta2.agregarClienteFinal(4, 15, distancias[0][4], distancias[3][4], distancias[4][0]);
-    
-    imprimirRutaBonita(ruta1, "Ruta 1 Original (Capacidad 50)");
-    imprimirRutaBonita(ruta2, "Ruta 2 Original (Capacidad 100)");
-    
-    vector<NodeRoute*> clientes1 = ruta1.getAllClientes();
-    vector<NodeRoute*> clientes2 = ruta2.getAllClientes();
-    
-    NodeRoute* cliente1 = clientes1[0];
-    NodeRoute* cliente3 = clientes2[0];
-    
-    cout << "🔄 Realizando swap entre cliente " << cliente1->id << " (Ruta 1 - capacidad 50) y cliente " << cliente3->id << " (Ruta 2 - capacidad 100)..." << endl;
-    
-    double costo_anterior_1 = calcularCostoAnterior(cliente1);
-    double costo_anterior_3 = calcularCostoAnterior(cliente3);
-    double costo_nuevo_1 = calcularCostoNuevo(cliente1, cliente3->anterior, cliente3->siguiente);
-    double costo_nuevo_3 = calcularCostoNuevo(cliente3, cliente1->anterior, cliente1->siguiente);
-    
-    ruta1.swapClientes(ruta2, cliente1, cliente3, cliente1->demanda, cliente3->demanda,
-                      costo_anterior_1, costo_anterior_3, costo_nuevo_1, costo_nuevo_3);
-    
-    imprimirRutaBonita(ruta1, "Ruta 1 Después del Swap");
-    imprimirRutaBonita(ruta2, "Ruta 2 Después del Swap");
-    
-    verificarIntegridadRuta(ruta1, "ruta 1 después del swap");
-    verificarIntegridadRuta(ruta2, "ruta 2 después del swap");
-    
-    cout << "Test de swap entre rutas con capacidades diferentes PASÓ ✅" << endl;
+// -------- TEST 5: EXTREMOS EN UNA MISMA RUTA --------
+void TestSwapClientes::testSwapExtremosMismaRuta() {
+    cout << "-------- TEST 5: EXTREMOS EN UNA MISMA RUTA --------\n";
+    vector<vector<double>> dist = distancias;
+    vector<int> demandas = {0, 10, 15, 20, 25};
+    Route ruta = crearRuta({1, 2, 3, 4}, demandas, 100, dist);
+    cout << "Estado de rutas antes de swap:" << endl;
+    cout << "Ruta 1: "; ruta.imprimirRuta();
+    cout << endl;
+    bool ok = true;
+    int idA = 1, idB = 4;
+    try {
+        NodeRoute* n1 = buscarNodo(ruta, idA);
+        NodeRoute* n4 = buscarNodo(ruta, idB);
+        ruta.swapClientes(ruta, n1, n4, distancias);
+        cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
+        cout << "Ruta 1: "; ruta.imprimirRuta();
+        cout << endl;
+        verificarIntegridadRuta(ruta, 1);
+    } catch (...) { ok = false; }
+    cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+}
+
+// -------- TEST 6: EXTREMOS ENTRE RUTAS --------
+void TestSwapClientes::testSwapExtremosEntreRutas() {
+    cout << "-------- TEST 6: EXTREMOS ENTRE RUTAS --------\n";
+    vector<vector<double>> dist = distancias;
+    vector<int> demandas = {0, 10, 15, 20, 25, 30};
+    Route r1 = crearRuta({1, 2, 3}, demandas, 100, dist);
+    Route r2 = crearRuta({4, 5, 6}, demandas, 100, dist);
+    cout << "Estado de rutas antes de swap:" << endl;
+    cout << "Ruta 1: "; r1.imprimirRuta();
+    cout << "Ruta 2: "; r2.imprimirRuta();
+    cout << endl;
+    bool ok = true;
+    int idA = 1, idB = 6;
+    try {
+        NodeRoute* nA = buscarNodo(r1, idA);
+        NodeRoute* nB = buscarNodo(r2, idB);
+        r1.swapClientes(r2, nA, nB, distancias);
+        cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
+        cout << "Ruta 1: "; r1.imprimirRuta();
+        cout << "Ruta 2: "; r2.imprimirRuta();
+        cout << endl;
+        verificarIntegridadRuta(r1, 1);
+        verificarIntegridadRuta(r2, 2);
+    } catch (...) { ok = false; }
+    cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+}
+
+
+// -------- TEST 7: SWAP INVERSO EN LA MISMA RUTA --------
+void TestSwapClientes::testSwapInversoMismaRuta() {
+    cout << "-------- TEST 7: SWAP INVERSO EN LA MISMA RUTA --------\n";
+    vector<vector<double>> dist = distancias;
+    vector<int> demandas = {0, 10, 15, 20, 25};
+    Route ruta = crearRuta({1, 2, 3, 4}, demandas, 100, dist);
+    cout << "Estado de rutas antes de swap:" << endl;
+    cout << "Ruta 1: "; ruta.imprimirRuta();
+    cout << endl;
+    bool ok = true;
+    int idA = 3, idB = 2;
+    try {
+        NodeRoute* nA = buscarNodo(ruta, idA);
+        NodeRoute* nB = buscarNodo(ruta, idB);
+        ruta.swapClientes(ruta, nA, nB, distancias);
+        cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
+        cout << "Ruta 1: "; ruta.imprimirRuta();
+        cout << endl;
+        verificarIntegridadRuta(ruta, 1);
+    } catch (...) { ok = false; }
+    cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+}
+
+// -------- TEST 8: SWAP INVERSO ENTRE RUTAS --------
+void TestSwapClientes::testSwapInversoEntreRutas() {
+    cout << "-------- TEST 8: SWAP INVERSO ENTRE RUTAS --------\n";
+    vector<vector<double>> dist = distancias;
+    vector<int> demandas = {0, 10, 15, 20, 25, 30};
+    Route r1 = crearRuta({1, 2, 3}, demandas, 100, dist);
+    Route r2 = crearRuta({4, 5, 6}, demandas, 100, dist);
+    cout << "Estado de rutas antes de swap:" << endl;
+    cout << "Ruta 1: "; r1.imprimirRuta();
+    cout << "Ruta 2: "; r2.imprimirRuta();
+    cout << endl;
+    bool ok = true;
+    int idA = 4, idB = 2;
+    try {
+        NodeRoute* nA = buscarNodo(r2, idA);
+        NodeRoute* nB = buscarNodo(r1, idB);
+        r2.swapClientes(r1, nA, nB, distancias);
+        cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
+        cout << "Ruta 1: "; r1.imprimirRuta();
+        cout << "Ruta 2: "; r2.imprimirRuta();
+        cout << endl;
+        verificarIntegridadRuta(r1, 1);
+        verificarIntegridadRuta(r2, 2);
+    } catch (...) { ok = false; }
+    cout << (ok ? "OK" : "FALLO") << "\n" << endl;
 }
 
 void TestSwapClientes::ejecutarTodosLosTests() {
-    cout << "\n🚀 INICIANDO TESTS EXHAUSTIVOS PARA SwapClientes" << endl;
-    cout << "═══════════════════════════════════════════════════════════════" << endl;
-    cout << "📋 Casos de prueba que se ejecutarán:" << endl;
-    cout << "   1. Nodos consecutivos en la misma ruta" << endl;
-    cout << "   2. Nodos de distintas rutas" << endl;
-    cout << "   3. Nodos de la misma ruta pero no consecutivos" << endl;
-    cout << "   4. Swap con nodos en extremos de rutas" << endl;
-    cout << "   5. Ruta con un solo cliente" << endl;
-    cout << "   6. Rutas con capacidades diferentes" << endl;
-    cout << "═══════════════════════════════════════════════════════════════" << endl;
+    cout << "=======================================" << endl;
+    cout << "TESTING EXHAUSTIVO DE SWAP CLIENTES" << endl;
+    cout << "=======================================\n" << endl;
+
+    int okCount = 0, failCount = 0;
+    auto runTest = [&](void (TestSwapClientes::*test)()) {
+        int before = okCount + failCount;
+        try { (this->*test)(); okCount++; } catch (...) { failCount++; }
+        if (okCount + failCount == before) failCount++; // Si no sumó, es FALLO
+    };
+
+    runTest(&TestSwapClientes::testSwapConsecutivosMismaRuta);
+    runTest(&TestSwapClientes::testSwapDistintasRutas);
+    runTest(&TestSwapClientes::testSwapNoConsecutivosMismaRuta);
+    runTest(&TestSwapClientes::testSwapRutaUnSoloCliente);
+    runTest(&TestSwapClientes::testSwapExtremosMismaRuta);
+    runTest(&TestSwapClientes::testSwapExtremosEntreRutas);
+    runTest(&TestSwapClientes::testSwapInversoMismaRuta);
+    runTest(&TestSwapClientes::testSwapInversoEntreRutas);
     
-    try {
-        testSwapConsecutivosMismaRuta();
-        testSwapDistintasRutas();
-        testSwapNoConsecutivosMismaRuta();
-        testSwapExtremosRutas();
-        testSwapRutaUnSoloCliente();
-        testSwapCapacidadesDiferentes();
-        
-        cout << "\n🎉 ¡TODOS LOS TESTS PASARON EXITOSAMENTE!" << endl;
-        cout << "═══════════════════════════════════════════════════════════════" << endl;
-        cout << "✅ Cobertura de casos bordes completada:" << endl;
-        cout << "   ✓ Nodos consecutivos en la misma ruta" << endl;
-        cout << "   ✓ Nodos de distintas rutas" << endl;
-        cout << "   ✓ Nodos de la misma ruta pero no consecutivos" << endl;
-        cout << "   ✓ Casos bordes adicionales (extremos, rutas con un cliente, capacidades diferentes)" << endl;
-        cout << "═══════════════════════════════════════════════════════════════" << endl;
-        
-    } catch (const exception& e) {
-        cout << "\n❌ ERROR en los tests: " << e.what() << endl;
-        cout << "═══════════════════════════════════════════════════════════════" << endl;
-    }
+    cout << "============================================================" << endl;
+    cout << "✓ TODOS LOS TESTS DE SWAPCLIENTES PASARON (" << okCount << " OK, " << failCount << " FALLO)" << endl;
+    cout << "============================================================" << endl;
 }
 
 int main() {

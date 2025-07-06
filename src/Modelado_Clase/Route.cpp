@@ -84,8 +84,36 @@ void Route::unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double 
     this->_distanciaTotal += otraRuta._distanciaTotal + dist_ij - dist_depi - dis_depj; // O(1)
 }
 
-void Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, int demandaA, int demandaB, 
-    double costo_anterior_A, double costo_anterior_B, double costo_nuevo_A, double costo_nuevo_B) {
+void Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, const vector<vector<double>>& distancias) {
+    // Inicialización de variables
+    int demandaA = clienteA->demanda; // O(1)
+    int demandaB = clienteB->demanda; // O(1)
+
+    // Identifico vecinos de cada cliente para calcular el costo del cambio
+    int cliente_anterior_A = clienteA->anterior->id; // O(1)
+    int cliente_siguiente_A = clienteA->siguiente->id; // O(1)
+    int cliente_anterior_B = clienteB->anterior->id; // O(1)
+    int cliente_siguiente_B = clienteB->siguiente->id; // O(1)
+    
+    // Costo antes del swap para A y B
+    double costo_anterior_A = distancias[cliente_anterior_A][clienteA->id] + distancias[clienteA->id][cliente_siguiente_A]; // O(1)
+    double costo_anterior_B = distancias[cliente_anterior_B][clienteB->id] + distancias[clienteB->id][cliente_siguiente_B]; // O(1)
+
+    double costo_nuevo_A, costo_nuevo_B;
+    if (clienteA->siguiente != clienteB && clienteB->siguiente != clienteA) { 
+        // Costo después del swap para A y B (no consecutivos)
+        costo_nuevo_A = distancias[cliente_anterior_B][clienteA->id] + distancias[clienteA->id][cliente_siguiente_B]; // O(1)
+        costo_nuevo_B = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][cliente_siguiente_A]; // O(1)
+    } else { // Nodos consecutivos
+        if (clienteB == clienteA->siguiente) { // Caso A->B consecutivos
+            costo_nuevo_A = distancias[clienteA->id][clienteB->id] + distancias[clienteA->id][cliente_siguiente_B]; // O(1)
+            costo_nuevo_B = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][clienteA->id]; // O(1)
+        } else { // Caso B->A consecutivos
+            costo_nuevo_A = distancias[clienteA->id][clienteB->id] + distancias[clienteA->id][cliente_anterior_B]; // O(1)
+            costo_nuevo_B = distancias[cliente_siguiente_A][clienteB->id] + distancias[clienteB->id][clienteA->id]; // O(1)
+        }
+    }
+
     NodeRoute* clienteA_anterior = clienteA->anterior;
     NodeRoute* clienteA_siguiente = clienteA->siguiente;
     NodeRoute* clienteB_anterior = clienteB->anterior;
@@ -132,12 +160,12 @@ void Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* client
     if (misma_ruta) {
         this->_distanciaTotal += (costo_nuevo_A + costo_nuevo_B) - (costo_anterior_A + costo_anterior_B);
     } else {
-        this->_distanciaTotal += costo_nuevo_A - costo_anterior_A;
-        otraRuta._distanciaTotal += costo_nuevo_B - costo_anterior_B;
+        this->_distanciaTotal += costo_nuevo_B - costo_anterior_A;
+        otraRuta._distanciaTotal += costo_nuevo_A - costo_anterior_B;
     } 
 }
 
-void Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const vector<int>& demandas, const vector<vector<double>>& distancias ) {
+void Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const vector<int>& demandas, const vector<vector<double>>& distancias) {
     int cliente_i = cliente->id;
     int cliente_p = cliente->anterior->id;
     int cliente_q = cliente->siguiente->id;
@@ -180,38 +208,6 @@ void Route::imprimirRuta() const {
               << " | Distancia total: " << this->getDistanciaTotal() // O(1)
               << endl; // O(1)
 }
-
-Route::Route(const Route& other) {
-    this->_demandaTotal = other._demandaTotal;
-    this->_capacidad = other._capacidad;
-    this->_distanciaTotal = other._distanciaTotal;
-    
-    // Copiar la lista enlazada
-    this->_raiz = nullptr;
-    this->_ultimo = nullptr;
-    
-    if (other._raiz != nullptr) {
-        // Copiar el primer nodo (depot)
-        this->_raiz = new NodeRoute{other._raiz->id, other._raiz->demanda, nullptr, nullptr};
-        
-        NodeRoute* actualOrigen = other._raiz->siguiente;
-        NodeRoute* actualDestino = this->_raiz;
-        
-        // Copiar todos los nodos intermedios
-        while (actualOrigen != nullptr) {
-            NodeRoute* nuevoNodo = new NodeRoute{actualOrigen->id, actualOrigen->demanda, actualDestino, nullptr};
-            actualDestino->siguiente = nuevoNodo;
-            
-            if (actualOrigen == other._ultimo) {
-                this->_ultimo = nuevoNodo;
-            }
-            
-            actualDestino = nuevoNodo;
-            actualOrigen = actualOrigen->siguiente;
-        }
-    }
-}
-
 
 // --- Getter Implementations ---
 

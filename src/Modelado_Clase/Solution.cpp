@@ -78,6 +78,14 @@ void Solution::exportarSolutionParcial(const vector<Node>& nodos, int numero_ite
         algoritmo = "NNSwap_FI";
     } else if (this->_algoritmo == "NearestNeighbor + Swap (BestImprovement)") {
         algoritmo = "NNSwap_BI";
+    } else if (this->_algoritmo == "ClarkeWright + Relocate (FirstImprovement)") {
+        algoritmo = "CWRelocate_FI";
+    } else if (this->_algoritmo == "ClarkeWright + Relocate (BestImprovement)") {
+        algoritmo = "CWRelocate_BI";
+    } else if (this->_algoritmo == "NearestNeighbor + Relocate (FirstImprovement)") {
+        algoritmo = "NNRelocate_FI";
+    } else if (this->_algoritmo == "NearestNeighbor + Relocate (BestImprovement)") {
+        algoritmo = "NNRelocate_BI";
     }
 
     std::ostringstream filename;
@@ -110,71 +118,6 @@ void Solution::exportarSolutionParcial(const vector<Node>& nodos, int numero_ite
         }
     }
     out.close();
-}
-
-// Método para obtener una ruta por índice
-Route* Solution::getRutaByIndex(int index) {
-    if (index >= 0 && index < this->_cantidad_rutas) {
-        return get<1>(this->_rutas[index]);
-    }
-    return nullptr;
-}
-
-// Método para obtener el costo total de la solución
-double Solution::getCostoTotal() const {
-    double costoTotal = 0.0;
-    for (int i = 0; i < this->_cantidad_rutas; i++) {
-        Route* ruta = get<1>(this->_rutas[i]);
-        costoTotal += ruta->getDistanciaTotal();
-    }
-    return costoTotal;
-}
-
-// Constructor de copia
-Solution::Solution(const Solution& other) {
-    this->_cantidad_rutas = other._cantidad_rutas;
-    this->_cantidad_camiones = other._cantidad_camiones;
-    this->_ultimo_id = other._ultimo_id;
-    this->_algoritmo = other._algoritmo;
-    
-    // Copiar las rutas (copia profunda)
-    for (int i = 0; i < other._cantidad_rutas; i++) {
-        Route* rutaOriginal = get<1>(other._rutas[i]);
-        Route* nuevaRuta = new Route(*rutaOriginal); // Necesitarás implementar constructor de copia en Route
-        this->_rutas.push_back(make_tuple(get<0>(other._rutas[i]), nuevaRuta));
-    }
-}
-
-// Operador de asignación
-Solution& Solution::operator=(const Solution& other) {
-    if (this != &other) {
-        // Limpiar rutas existentes
-        for (int i = 0; i < this->_cantidad_rutas; i++) {
-            delete get<1>(this->_rutas[i]);
-        }
-        this->_rutas.clear();
-        
-        // Copiar del otro objeto
-        this->_cantidad_rutas = other._cantidad_rutas;
-        this->_cantidad_camiones = other._cantidad_camiones;
-        this->_ultimo_id = other._ultimo_id;
-        this->_algoritmo = other._algoritmo;
-        
-        // Copiar las rutas
-        for (int i = 0; i < other._cantidad_rutas; i++) {
-            Route* rutaOriginal = get<1>(other._rutas[i]);
-            Route* nuevaRuta = new Route(*rutaOriginal);
-            this->_rutas.push_back(make_tuple(get<0>(other._rutas[i]), nuevaRuta));
-        }
-    }
-    return *this;
-}
-
-// Destructor
-Solution::~Solution() {
-    for (int i = 0; i < this->_cantidad_rutas; i++) {
-        delete get<1>(this->_rutas[i]);
-    }
 }
 
 // --- Getter Implementations ---

@@ -1,13 +1,9 @@
 #include "Heuristicas.h"
 
-int demandaA = 0;
-int demandaB = 0;
-double costo_anterior_A, costo_anterior_B, costo_nuevo_A, costo_nuevo_B;
-
 double Heuristicas::chequearMejoraSwap(Route& ruta_A, Route& ruta_B, NodeRoute* clienteA, NodeRoute* clienteB, const vector<vector<double>>& distancias) {
     // Inicialización de variables
-    demandaA = clienteA->demanda; // O(1)
-    demandaB = clienteB->demanda; // O(1)
+    int demandaA = clienteA->demanda; // O(1)
+    int demandaB = clienteB->demanda; // O(1)
 
     bool misma_ruta = ruta_A.getRaiz()->siguiente == ruta_B.getRaiz()->siguiente; // O(1) verifica que son la misma ruta
     bool excede_capacidad = false; // O(1)
@@ -23,6 +19,7 @@ double Heuristicas::chequearMejoraSwap(Route& ruta_A, Route& ruta_B, NodeRoute* 
         }
     }
     
+    double costo_anterior_A, costo_anterior_B, costo_nuevo_A, costo_nuevo_B;
     if (!excede_capacidad) { // O(1)
         // Identifico vecinos de cada cliente para calcular el costo del cambio
         int cliente_anterior_A = clienteA->anterior->id; // O(1)
@@ -107,8 +104,6 @@ void Heuristicas::swap(Solution& solucion, int criterio, bool exportar) {
         bool swap_valido = false; // O(1)
         double best_mejora = 0.0; // O(1)
         NodeRoute* best_cliente = nullptr; // O(1)
-        int best_demandaA = 0, best_demandaB = 0; // O(1)
-        double best_costo_anterior_B = 0.0, best_costo_nuevo_A = 0.0, best_costo_nuevo_B = 0.0; // O(1)
         Route* best_rutaB = nullptr; // O(1)
 
         // Recorremos todas las rutas para comparar clientes entre rutas distintas
@@ -124,12 +119,8 @@ void Heuristicas::swap(Solution& solucion, int criterio, bool exportar) {
                 } else {
                     if (criterio == 0) { // First Improvement
                         if (chequearMejoraSwap(*rutaA, *rutaB, actualA, actualB, distancias) > 0.0) { // O(1)
-                            //cout << "Swap valido entre " << actualA->id << " y " << actualB->id << endl;
                             // Si el swap mejora, lo aplicamos directamente (first improvement)
-                            rutaA->swapClientes(*rutaB, actualA, actualB, demandaA, demandaB, costo_anterior_A,
-                                costo_anterior_B, costo_nuevo_A, costo_nuevo_B); // O(1)
-                            //solucion.imprimirSolution();
-                            //cout << "==" << endl;
+                            rutaA->swapClientes(*rutaB, actualA, actualB, distancias); // O(1)
                             swap_valido = true; // O(1)
 
                             if (exportar) {
@@ -145,11 +136,6 @@ void Heuristicas::swap(Solution& solucion, int criterio, bool exportar) {
                             // Guardamos el mejor swap encontrado hasta ahora
                             best_mejora = mejora_auxiliar; // O(1)
                             best_cliente = actualB; // O(1)
-                            best_demandaA = demandaA; // O(1)
-                            best_demandaB = demandaB; // O(1)
-                            best_costo_anterior_B = costo_anterior_B; // O(1)
-                            best_costo_nuevo_A = costo_nuevo_A; // O(1)
-                            best_costo_nuevo_B = costo_nuevo_B; // O(1)
                             best_rutaB = rutaB; // O(1)
                         }
                         actualB = actualB->siguiente; // O(1)
@@ -163,12 +149,7 @@ void Heuristicas::swap(Solution& solucion, int criterio, bool exportar) {
 
         // Si estamos en Best Improvement, aplicamos el mejor swap encontrado si hubo mejora
         if (criterio == 1 && best_mejora > 0.0) { // O(1)
-            //cout << "Swap valido entre " << actualA->id << " y " << best_cliente->id << endl;
-            rutaA->swapClientes(*best_rutaB, actualA, best_cliente, best_demandaA, best_demandaB, 
-                costo_anterior_A, best_costo_anterior_B, best_costo_nuevo_A, best_costo_nuevo_B); // O(1)
-            //solucion.imprimirSolution();
-            //cout << "==" << endl;
-
+            rutaA->swapClientes(*best_rutaB, actualA, best_cliente, distancias); // O(1)
             if (exportar) {
                 solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++); // O(N)
             }
