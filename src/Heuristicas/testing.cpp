@@ -2,7 +2,9 @@
 #include <chrono>
 using namespace std::chrono;
 
-void resolverCVRP(string algoritmo, string instancia, bool exportar = false, string criterio = "", int rcl_size = 3) {
+void resolverCVRP(string algoritmo, string instancia, bool exportar = false, string criterio = "", int rcl_size = 3, 
+    string operador_local="Relocate", int numero_iteraciones = 1000) {
+
     size_t slash_pos = instancia.find_last_of('/');
     size_t dot_pos = instancia.find_last_of('.');
     string nombre = instancia.substr(slash_pos + 1, dot_pos - slash_pos - 1);
@@ -42,8 +44,12 @@ void resolverCVRP(string algoritmo, string instancia, bool exportar = false, str
         solucion = heuristicas.nearestNeighbor();
         heuristicas.relocate(solucion, 1, exportar);
     } else if (algoritmo == "NearestNeighborRandomized") {
-        solucion = heuristicas.nearestNeighborRandomized(exportar, rcl_size);
-    } 
+        solucion = heuristicas.nearestNeighborRandomized(0, exportar, rcl_size);
+    } else if (algoritmo == "GRASP" && criterio == "firstImprovement") {
+        solucion = heuristicas.GRASP(numero_iteraciones, operador_local, 0, rcl_size);
+    } else if (algoritmo == "GRASP" && criterio == "bestImprovement") {
+        solucion = heuristicas.GRASP(numero_iteraciones, operador_local, 1, rcl_size);
+    }
 
     auto end = high_resolution_clock::now();
     auto duracion_us = duration_cast<microseconds>(end - start).count();
@@ -59,7 +65,7 @@ void resolverCVRP(string algoritmo, string instancia, bool exportar = false, str
 }
 
 int main() {
-    //resolverCVRP("ClarkeWright", "instancias/2l-cvrp-0/E016-03m.dat", false);
+    resolverCVRP("ClarkeWright", "instancias/2l-cvrp-0/E200-17c.dat", false);
     resolverCVRP("NearestNeighborRandomized", "instancias/2l-cvrp-0/E045-04f.dat", false);
 
     /*
@@ -75,5 +81,7 @@ int main() {
     resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "firstImprovement");
     resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "bestImprovement");
     */
+
+    resolverCVRP("GRASP", "instancias/2l-cvrp-0/E200-17c.dat", false, "bestImprovement", 3, "Relocate", 1000);
     return 0;
 }

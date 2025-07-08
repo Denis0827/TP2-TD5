@@ -41,7 +41,7 @@ int Heuristicas::clienteAleatorioRCL(const vector<double>& distanciasCliente, in
 }
 // Complejidad total: O(N) en promedio
 
-Solution Heuristicas::nearestNeighborRandomized(bool exportar, int rcl_size) {
+Solution Heuristicas::nearestNeighborRandomized(int i_random, bool exportar, int rcl_size) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix(); // O(1)
     const vector<int>& demandas = this->_instancia.getDemands(); // O(1)
     int depot = this->_instancia.getDepotId(); // O(1)
@@ -53,7 +53,7 @@ Solution Heuristicas::nearestNeighborRandomized(bool exportar, int rcl_size) {
 
     // INicializar generador de números aleatorios
     mt19937 gen;
-    gen.seed(time(nullptr)); // Usar tiempo actual
+    gen.seed(time(nullptr) + i_random); // Usar tiempo actual
 
     // para saber cuándo todos los clientes tienen una ruta
     int clientes_no_visitados = n - 1; // O(1) sin contar el deposito

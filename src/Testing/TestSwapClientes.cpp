@@ -38,28 +38,23 @@ void TestSwapClientes::inicializarDistancias() {
     }
 }
 
-void TestSwapClientes::verificarIntegridadRuta(const Route& ruta, int rutaNum) {
-    // Chequeo de raíz y último
-    assert(ruta.getRaiz() != nullptr);
-    assert(ruta.getUltimo() != nullptr);
+bool TestSwapClientes::verificarIntegridadRuta(const Route& ruta, int rutaNum) {
+    if (ruta.getRaiz() == nullptr) return false;
+    if (ruta.getUltimo() == nullptr) return false;
     // Chequeo de enlaces dobles y consistencia de nodos
     const NodeRoute* actual = ruta.getRaiz();
-    int count = 0;
     while (actual != nullptr) {
-        if (actual->siguiente != nullptr) assert(actual->siguiente->anterior == actual);
-        if (actual->anterior != nullptr) assert(actual->anterior->siguiente == actual);
+        if (actual->siguiente != nullptr && actual->siguiente->anterior != actual) return false;
+        if (actual->anterior != nullptr && actual->anterior->siguiente != actual) return false;
         actual = actual->siguiente;
-        count++;
     }
     // Chequeo de demanda total
     std::vector<NodeRoute*> clientes = ruta.getAllClientes();
     int demandaCalculada = 0;
-    for (NodeRoute* cliente : clientes) {
-        demandaCalculada += cliente->demanda;
-    }
-    assert(demandaCalculada == ruta.getDemandaTotal());
+    for (NodeRoute* cliente : clientes) demandaCalculada += cliente->demanda;
+    if (demandaCalculada != ruta.getDemandaTotal()) return false;
     // Chequeo de capacidad
-    assert(ruta.getCapacidadRestante() == ruta.getCapacidadTotal() - ruta.getDemandaTotal());
+    if (ruta.getCapacidadRestante() != ruta.getCapacidadTotal() - ruta.getDemandaTotal()) return false;
     // Chequeo de distancia total
     double distanciaCalculada = 0;
     actual = ruta.getRaiz();
@@ -69,7 +64,7 @@ void TestSwapClientes::verificarIntegridadRuta(const Route& ruta, int rutaNum) {
         distanciaCalculada += distancias[from][to];
         actual = actual->siguiente;
     }
-    assert(distanciaCalculada == ruta.getDistanciaTotal());
+    if (std::abs(distanciaCalculada - ruta.getDistanciaTotal()) > 1e-6) return false;
     // Chequeo de consistencia de nodos (no repetidos, depot solo en extremos)
     std::vector<int> ids;
     actual = ruta.getRaiz()->siguiente;
@@ -79,13 +74,12 @@ void TestSwapClientes::verificarIntegridadRuta(const Route& ruta, int rutaNum) {
     }
     std::sort(ids.begin(), ids.end());
     for (size_t i = 1; i < ids.size(); ++i) {
-        assert(ids[i] != ids[i-1]); // no repetidos
+        if (ids[i] == ids[i-1]) return false;
     }
     // Depot solo en extremos
-    assert(ruta.getRaiz()->id == 0);
-    assert(ruta.getUltimo()->id == 0);
-    // Print final
-    cout << "Integridad de ruta " << rutaNum << " verificada correctamente" << endl;
+    if (ruta.getRaiz()->id != 0) return false;
+    if (ruta.getUltimo()->id != 0) return false;
+    return true;
 }
 
 TestSwapClientes::TestSwapClientes() {
@@ -93,7 +87,7 @@ TestSwapClientes::TestSwapClientes() {
 }
 
 // --- TEST 1: NODOS CONSECUTIVOS EN LA MISMA RUTA ---
-void TestSwapClientes::testSwapConsecutivosMismaRuta() {
+bool TestSwapClientes::testSwapConsecutivosMismaRuta() {
     cout << "-------- TEST 1: NODOS CONSECUTIVOS EN LA MISMA RUTA --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20};
@@ -110,13 +104,14 @@ void TestSwapClientes::testSwapConsecutivosMismaRuta() {
         cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
         cout << "Ruta 1: "; ruta.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(ruta, 1);
+        ok = verificarIntegridadRuta(ruta, 1);
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+    return ok;
 }
 
 // --- TEST 2: NODOS DE DISTINTAS RUTAS ---
-void TestSwapClientes::testSwapDistintasRutas() {
+bool TestSwapClientes::testSwapDistintasRutas() {
     cout << "-------- TEST 2: NODOS DE DISTINTAS RUTAS --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25};
@@ -136,14 +131,14 @@ void TestSwapClientes::testSwapDistintasRutas() {
         cout << "Ruta 1: "; r1.imprimirRuta();
         cout << "Ruta 2: "; r2.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(r1, 1);
-        verificarIntegridadRuta(r2, 2);
+        ok = verificarIntegridadRuta(r1, 1) && verificarIntegridadRuta(r2, 2);
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+    return ok;
 }
 
 // --- TEST 3: NODOS NO CONSECUTIVOS EN LA MISMA RUTA ---
-void TestSwapClientes::testSwapNoConsecutivosMismaRuta() {
+bool TestSwapClientes::testSwapNoConsecutivosMismaRuta() {
     cout << "-------- TEST 3: NODOS NO CONSECUTIVOS EN LA MISMA RUTA --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25};
@@ -160,13 +155,14 @@ void TestSwapClientes::testSwapNoConsecutivosMismaRuta() {
         cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
         cout << "Ruta 1: "; ruta.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(ruta, 1);
+        ok = verificarIntegridadRuta(ruta, 1);
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+    return ok;
 }
 
 // --- TEST 4: RUTA CON UN SOLO CLIENTE ---
-void TestSwapClientes::testSwapRutaUnSoloCliente() {
+bool TestSwapClientes::testSwapRutaUnSoloCliente() {
     cout << "-------- TEST 4: RUTA CON UN SOLO CLIENTE --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20};
@@ -186,14 +182,14 @@ void TestSwapClientes::testSwapRutaUnSoloCliente() {
         cout << "Ruta 1: "; r1.imprimirRuta();
         cout << "Ruta 2: "; r2.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(r1, 1);
-        verificarIntegridadRuta(r2, 2);
+        ok = verificarIntegridadRuta(r1, 1) && verificarIntegridadRuta(r2, 2);
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+    return ok;
 }
 
 // -------- TEST 5: EXTREMOS EN UNA MISMA RUTA --------
-void TestSwapClientes::testSwapExtremosMismaRuta() {
+bool TestSwapClientes::testSwapExtremosMismaRuta() {
     cout << "-------- TEST 5: EXTREMOS EN UNA MISMA RUTA --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25};
@@ -210,13 +206,14 @@ void TestSwapClientes::testSwapExtremosMismaRuta() {
         cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
         cout << "Ruta 1: "; ruta.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(ruta, 1);
+        ok = verificarIntegridadRuta(ruta, 1);
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+    return ok;
 }
 
 // -------- TEST 6: EXTREMOS ENTRE RUTAS --------
-void TestSwapClientes::testSwapExtremosEntreRutas() {
+bool TestSwapClientes::testSwapExtremosEntreRutas() {
     cout << "-------- TEST 6: EXTREMOS ENTRE RUTAS --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25, 30};
@@ -236,15 +233,15 @@ void TestSwapClientes::testSwapExtremosEntreRutas() {
         cout << "Ruta 1: "; r1.imprimirRuta();
         cout << "Ruta 2: "; r2.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(r1, 1);
-        verificarIntegridadRuta(r2, 2);
+        ok = verificarIntegridadRuta(r1, 1) && verificarIntegridadRuta(r2, 2);
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+    return ok;
 }
 
 
 // -------- TEST 7: SWAP INVERSO EN LA MISMA RUTA --------
-void TestSwapClientes::testSwapInversoMismaRuta() {
+bool TestSwapClientes::testSwapInversoMismaRuta() {
     cout << "-------- TEST 7: SWAP INVERSO EN LA MISMA RUTA --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25};
@@ -261,13 +258,14 @@ void TestSwapClientes::testSwapInversoMismaRuta() {
         cout << "Estado de rutas después de swap (" << idA << ", " << idB << "):" << endl;
         cout << "Ruta 1: "; ruta.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(ruta, 1);
+        ok = verificarIntegridadRuta(ruta, 1);
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+    return ok;
 }
 
 // -------- TEST 8: SWAP INVERSO ENTRE RUTAS --------
-void TestSwapClientes::testSwapInversoEntreRutas() {
+bool TestSwapClientes::testSwapInversoEntreRutas() {
     cout << "-------- TEST 8: SWAP INVERSO ENTRE RUTAS --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25, 30};
@@ -287,10 +285,10 @@ void TestSwapClientes::testSwapInversoEntreRutas() {
         cout << "Ruta 1: "; r1.imprimirRuta();
         cout << "Ruta 2: "; r2.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(r1, 1);
-        verificarIntegridadRuta(r2, 2);
+        ok = verificarIntegridadRuta(r1, 1) && verificarIntegridadRuta(r2, 2);
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+    return ok;
 }
 
 void TestSwapClientes::ejecutarTodosLosTests() {
@@ -299,12 +297,11 @@ void TestSwapClientes::ejecutarTodosLosTests() {
     cout << "=======================================\n" << endl;
 
     int okCount = 0, failCount = 0;
-    auto runTest = [&](void (TestSwapClientes::*test)()) {
-        int before = okCount + failCount;
-        try { (this->*test)(); okCount++; } catch (...) { failCount++; }
-        if (okCount + failCount == before) failCount++; // Si no sumó, es FALLO
+    auto runTest = [&](bool (TestSwapClientes::*test)()) {
+        bool ok = (this->*test)();
+        if (ok) okCount++;
+        else failCount++;
     };
-
     runTest(&TestSwapClientes::testSwapConsecutivosMismaRuta);
     runTest(&TestSwapClientes::testSwapDistintasRutas);
     runTest(&TestSwapClientes::testSwapNoConsecutivosMismaRuta);
@@ -313,8 +310,7 @@ void TestSwapClientes::ejecutarTodosLosTests() {
     runTest(&TestSwapClientes::testSwapExtremosEntreRutas);
     runTest(&TestSwapClientes::testSwapInversoMismaRuta);
     runTest(&TestSwapClientes::testSwapInversoEntreRutas);
-    
-    cout << "============================================================" << endl;
+    cout << "==============================================================" << endl;
     cout << "✓ TODOS LOS TESTS DE SWAPCLIENTES PASARON (" << okCount << " OK, " << failCount << " FALLO)" << endl;
     cout << "============================================================" << endl;
 }

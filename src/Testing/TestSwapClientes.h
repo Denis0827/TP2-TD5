@@ -19,24 +19,24 @@ class TestSwapClientes {
 
         // Funciones auxiliares para cálculos y verificaciones
         void inicializarDistancias();
-        void verificarIntegridadRuta(const Route& ruta, int rutaNum);
+        bool verificarIntegridadRuta(const Route& ruta, int rutaNum);
 
     public:
         TestSwapClientes();
 
         // Tests principales
-        void testSwapConsecutivosMismaRuta();       // CASO 1: Nodos consecutivos en la misma ruta
-        void testSwapDistintasRutas();              // CASO 2: Nodos de distintas rutas
-        void testSwapNoConsecutivosMismaRuta();     // CASO 3: Nodos de la misma ruta pero no consecutivos
+        bool testSwapConsecutivosMismaRuta();       // CASO 1: Nodos consecutivos en la misma ruta
+        bool testSwapDistintasRutas();              // CASO 2: Nodos de distintas rutas
+        bool testSwapNoConsecutivosMismaRuta();     // CASO 3: Nodos de la misma ruta pero no consecutivos
         
         // Tests de casos bordes
-        void testSwapRutaUnSoloCliente();           // CASO 4: Ruta con un solo cliente
+        bool testSwapRutaUnSoloCliente();           // CASO 4: Ruta con un solo cliente
 
-        void testSwapExtremosMismaRuta();           // CASO 5: Swap entre los extremos de una misma ruta
-        void testSwapExtremosEntreRutas();          // CASO 6: Swap entre los extremos de dos rutas distintas
+        bool testSwapExtremosMismaRuta();           // CASO 5: Swap entre los extremos de una misma ruta
+        bool testSwapExtremosEntreRutas();          // CASO 6: Swap entre los extremos de dos rutas distintas
         
-        void testSwapInversoMismaRuta();            // CASO 7: Swap en el orden invertido dentro de una misma ruta
-        void testSwapInversoEntreRutas();           // CASO 8: Swap en el orden invertido dentro de dos rutas distintas
+        bool testSwapInversoMismaRuta();            // CASO 7: Swap en el orden invertido dentro de una misma ruta
+        bool testSwapInversoEntreRutas();           // CASO 8: Swap en el orden invertido dentro de dos rutas distintas
 
         void ejecutarTodosLosTests();
     };

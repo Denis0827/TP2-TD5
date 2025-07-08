@@ -24,6 +24,7 @@ class Solution {
         int getCantidadRutas() const;
         int getCantidadCamiones() const;
         string getAlgoritmo() const;
+        double getDistanciaTotal() const;
         vector<tuple<int, Route*>> getRutas() const;
         vector<tuple<NodeRoute*, Route*>> getAllClientesSol() const;
 

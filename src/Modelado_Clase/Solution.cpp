@@ -36,6 +36,15 @@ vector<tuple<NodeRoute*, Route*>> Solution::getAllClientesSol() const {
     return clientes;
 }
 
+double Solution::getDistanciaTotal() const {
+    double distancia = 0.0;
+    for (int i = 0; i < this->_cantidad_rutas; i++) {
+        Route* ruta = get<1>(this->_rutas[i]);
+        distancia += ruta->getDistanciaTotal();
+    }
+    return distancia;
+}
+
 void Solution::setAlgoritmo(string algoritmo) {
     this->_algoritmo = algoritmo;
 }
@@ -88,6 +97,8 @@ void Solution::exportarSolutionParcial(const vector<Node>& nodos, int numero_ite
         algoritmo = "NNRelocate_BI";
     } else if (this->_algoritmo == "NearestNeighborRandomized") {
         algoritmo = "NNRandom";
+    } else if (this->_algoritmo == "GRASP") {
+        algoritmo = "GRASP";
     }
 
     std::ostringstream filename;

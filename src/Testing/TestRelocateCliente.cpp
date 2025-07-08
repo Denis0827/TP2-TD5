@@ -38,28 +38,23 @@ void TestRelocateCliente::inicializarDistancias() {
     }
 }
 
-void TestRelocateCliente::verificarIntegridadRuta(const Route& ruta, int rutaNum) {
-    // Chequeo de raíz y último
-    assert(ruta.getRaiz() != nullptr);
-    assert(ruta.getUltimo() != nullptr);
+bool TestRelocateCliente::verificarIntegridadRuta(const Route& ruta, int rutaNum) {
+    if (ruta.getRaiz() == nullptr) return false;
+    if (ruta.getUltimo() == nullptr) return false;
     // Chequeo de enlaces dobles y consistencia de nodos
     const NodeRoute* actual = ruta.getRaiz();
-    int count = 0;
     while (actual != nullptr) {
-        if (actual->siguiente != nullptr) assert(actual->siguiente->anterior == actual);
-        if (actual->anterior != nullptr) assert(actual->anterior->siguiente == actual);
+        if (actual->siguiente != nullptr && actual->siguiente->anterior != actual) return false;
+        if (actual->anterior != nullptr && actual->anterior->siguiente != actual) return false;
         actual = actual->siguiente;
-        count++;
     }
     // Chequeo de demanda total
     std::vector<NodeRoute*> clientes = ruta.getAllClientes();
     int demandaCalculada = 0;
-    for (NodeRoute* cliente : clientes) {
-        demandaCalculada += cliente->demanda;
-    }
-    assert(demandaCalculada == ruta.getDemandaTotal());
+    for (NodeRoute* cliente : clientes) demandaCalculada += cliente->demanda;
+    if (demandaCalculada != ruta.getDemandaTotal()) return false;
     // Chequeo de capacidad
-    assert(ruta.getCapacidadRestante() == ruta.getCapacidadTotal() - ruta.getDemandaTotal());
+    if (ruta.getCapacidadRestante() != ruta.getCapacidadTotal() - ruta.getDemandaTotal()) return false;
     // Chequeo de distancia total
     double distanciaCalculada = 0;
     actual = ruta.getRaiz();
@@ -69,7 +64,7 @@ void TestRelocateCliente::verificarIntegridadRuta(const Route& ruta, int rutaNum
         distanciaCalculada += distancias[from][to];
         actual = actual->siguiente;
     }
-    assert(distanciaCalculada == ruta.getDistanciaTotal());
+    if (std::abs(distanciaCalculada - ruta.getDistanciaTotal()) > 1e-6) return false;
     // Chequeo de consistencia de nodos (no repetidos, depot solo en extremos)
     std::vector<int> ids;
     actual = ruta.getRaiz()->siguiente;
@@ -79,13 +74,12 @@ void TestRelocateCliente::verificarIntegridadRuta(const Route& ruta, int rutaNum
     }
     std::sort(ids.begin(), ids.end());
     for (size_t i = 1; i < ids.size(); ++i) {
-        assert(ids[i] != ids[i-1]); // no repetidos
+        if (ids[i] == ids[i-1]) return false;
     }
     // Depot solo en extremos
-    assert(ruta.getRaiz()->id == 0);
-    assert(ruta.getUltimo()->id == 0);
-    // Print final
-    cout << "Integridad de ruta " << rutaNum << " verificada correctamente" << endl;
+    if (ruta.getRaiz()->id != 0) return false;
+    if (ruta.getUltimo()->id != 0) return false;
+    return true;
 }
 
 TestRelocateCliente::TestRelocateCliente() {
@@ -93,7 +87,7 @@ TestRelocateCliente::TestRelocateCliente() {
 }
 
 // --- TEST 1: RELOCATE ENTRE RUTAS DIFERENTES ---
-void TestRelocateCliente::testRelocateEntreRutas() {
+bool TestRelocateCliente::testRelocateEntreRutas() {
     cout << "-------- TEST 1: RELOCATE ENTRE RUTAS DIFERENTES --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25};
@@ -113,14 +107,17 @@ void TestRelocateCliente::testRelocateEntreRutas() {
         cout << "Ruta 1: "; r1.imprimirRuta();
         cout << "Ruta 2: "; r2.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(r1, 1);
-        verificarIntegridadRuta(r2, 2);
+        ok = verificarIntegridadRuta(r1, 1);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta 1" << endl;
+        ok = verificarIntegridadRuta(r2, 2);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta 2" << endl;
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+    return ok;
 }
 
 // --- TEST 2: RELOCATE EN LA MISMA RUTA ---
-void TestRelocateCliente::testRelocateMismaRuta() {
+bool TestRelocateCliente::testRelocateMismaRuta() {
     cout << "-------- TEST 2: RELOCATE EN LA MISMA RUTA --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25};
@@ -137,13 +134,16 @@ void TestRelocateCliente::testRelocateMismaRuta() {
         cout << "Estado de ruta después de relocate (cliente " << idCliente << " después de " << idDestino << "):" << endl;
         cout << "Ruta: "; ruta.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(ruta, 1);
+        ok = verificarIntegridadRuta(ruta, 1);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta" << endl;
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+
+    return ok;
 }
 
 // --- TEST 3: RELOCATE EN POSICIONES CONSECUTIVAS ---
-void TestRelocateCliente::testRelocateConsecutivos() {
+bool TestRelocateCliente::testRelocateConsecutivos() {
     cout << "-------- TEST 3: RELOCATE EN POSICIONES CONSECUTIVAS --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25, 30};
@@ -160,13 +160,16 @@ void TestRelocateCliente::testRelocateConsecutivos() {
         cout << "Estado de ruta después de relocate (cliente " << idCliente << " después de " << idDestino << "):" << endl;
         cout << "Ruta: "; ruta.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(ruta, 1);
+        ok = verificarIntegridadRuta(ruta, 1);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta" << endl;
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+
+    return ok;
 }
 
 // --- TEST 4: RELOCATE AL INICIO DE LA RUTA ---
-void TestRelocateCliente::testRelocateAlInicio() {
+bool TestRelocateCliente::testRelocateAlInicio() {
     cout << "-------- TEST 4: RELOCATE AL INICIO DE LA RUTA --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20};
@@ -183,13 +186,16 @@ void TestRelocateCliente::testRelocateAlInicio() {
         cout << "Estado de ruta después de relocate (cliente " << idCliente << " al inicio):" << endl;
         cout << "Ruta: "; ruta.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(ruta, 1);
+        ok = verificarIntegridadRuta(ruta, 1);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta" << endl;
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+
+    return ok;
 }
 
 // --- TEST 5: RELOCATE AL FINAL DE LA RUTA ---
-void TestRelocateCliente::testRelocateAlFinal() {
+bool TestRelocateCliente::testRelocateAlFinal() {
     cout << "-------- TEST 5: RELOCATE AL FINAL DE LA RUTA --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20};
@@ -206,13 +212,16 @@ void TestRelocateCliente::testRelocateAlFinal() {
         cout << "Estado de ruta después de relocate (cliente " << idCliente << " al final):" << endl;
         cout << "Ruta: "; ruta.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(ruta, 1);
+        ok = verificarIntegridadRuta(ruta, 1);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta" << endl;
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+
+    return ok;
 }
 
 // --- TEST 6: RUTA CON UN SOLO CLIENTE ---
-void TestRelocateCliente::testRelocateRutaUnCliente() {
+bool TestRelocateCliente::testRelocateRutaUnCliente() {
     cout << "-------- TEST 6: RUTA CON UN SOLO CLIENTE --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20};
@@ -232,14 +241,18 @@ void TestRelocateCliente::testRelocateRutaUnCliente() {
         cout << "Ruta 1: "; r1.imprimirRuta();
         cout << "Ruta 2: "; r2.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(r1, 1);
-        verificarIntegridadRuta(r2, 2);
+        ok = verificarIntegridadRuta(r1, 1);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta 1" << endl;
+        ok = verificarIntegridadRuta(r2, 2);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta 2" << endl;
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+
+    return ok;
 }
 
 // --- TEST 7: RELOCATE EXTREMOS MISMA RUTA ---
-void TestRelocateCliente::testRelocateExtremosMismaRuta() {
+bool TestRelocateCliente::testRelocateExtremosMismaRuta() {
     cout << "-------- TEST 7: RELOCATE EXTREMOS MISMA RUTA --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25, 30};
@@ -256,13 +269,16 @@ void TestRelocateCliente::testRelocateExtremosMismaRuta() {
         cout << "Estado de ruta después de relocate (cliente " << idCliente << " después de " << idDestino << "):" << endl;
         cout << "Ruta: "; ruta.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(ruta, 1);
+        ok = verificarIntegridadRuta(ruta, 1);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta" << endl;
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+
+    return ok;
 }
 
 // --- TEST 8: RELOCATE EXTREMOS ENTRE RUTAS ---
-void TestRelocateCliente::testRelocateExtremosEntreRutas() {
+bool TestRelocateCliente::testRelocateExtremosEntreRutas() {
     cout << "-------- TEST 8: RELOCATE EXTREMOS ENTRE RUTAS --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25, 30};
@@ -282,14 +298,18 @@ void TestRelocateCliente::testRelocateExtremosEntreRutas() {
         cout << "Ruta 1: "; r1.imprimirRuta();
         cout << "Ruta 2: "; r2.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(r1, 1);
-        verificarIntegridadRuta(r2, 2);
+        ok = verificarIntegridadRuta(r1, 1);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta 1" << endl;
+        ok = verificarIntegridadRuta(r2, 2);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta 2" << endl;
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+
+    return ok;
 }
 
 // --- TEST 9: RELOCATE POSICIONES INVERSAS ---
-void TestRelocateCliente::testRelocatePosicionesInversas() {
+bool TestRelocateCliente::testRelocatePosicionesInversas() {
     cout << "-------- TEST 9: RELOCATE POSICIONES INVERSAS --------\n";
     vector<vector<double>> dist = distancias;
     vector<int> demandas = {0, 10, 15, 20, 25, 30};
@@ -306,9 +326,12 @@ void TestRelocateCliente::testRelocatePosicionesInversas() {
         cout << "Estado de ruta después de relocate (cliente " << idCliente << " después de " << idDestino << "):" << endl;
         cout << "Ruta: "; ruta.imprimirRuta();
         cout << endl;
-        verificarIntegridadRuta(ruta, 1);
+        ok = verificarIntegridadRuta(ruta, 1);
+        if (!ok) cout << "FALLO en verificarIntegridadRuta para Ruta" << endl;
     } catch (...) { ok = false; }
     cout << (ok ? "OK" : "FALLO") << "\n" << endl;
+
+    return ok;
 }
 
 // ---------- Función principal ----------
@@ -318,12 +341,11 @@ void TestRelocateCliente::ejecutarTodosLosTests() {
     cout << "=========================================\n" << endl;
 
     int okCount = 0, failCount = 0;
-    auto runTest = [&](void (TestRelocateCliente::*test)()) {
-        int before = okCount + failCount;
-        try { (this->*test)(); okCount++; } catch (...) { failCount++; }
-        if (okCount + failCount == before) failCount++; // Si no sumó, es FALLO
+    auto runTest = [&](bool (TestRelocateCliente::*test)()) {
+        bool ok = (this->*test)();
+        if (ok) okCount++;
+        else failCount++;
     };
-
     runTest(&TestRelocateCliente::testRelocateEntreRutas);
     runTest(&TestRelocateCliente::testRelocateMismaRuta);
     runTest(&TestRelocateCliente::testRelocateConsecutivos);
@@ -333,7 +355,7 @@ void TestRelocateCliente::ejecutarTodosLosTests() {
     runTest(&TestRelocateCliente::testRelocateExtremosMismaRuta);
     runTest(&TestRelocateCliente::testRelocateExtremosEntreRutas);
     runTest(&TestRelocateCliente::testRelocatePosicionesInversas);
-
+    
     cout << "==============================================================" << endl;
     cout << "✓ TODOS LOS TESTS DE RELOCATECLIENTE PASARON (" << okCount << " OK, " << failCount << " FALLO)" << endl;
     cout << "==============================================================" << endl;

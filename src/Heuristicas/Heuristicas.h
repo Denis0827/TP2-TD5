@@ -53,8 +53,8 @@ class Heuristicas {
         // criterio: 0 -> First Improvement, 1 -> Best Improvement
 
         // Método GRASP para Nearest Neighbor
-        Solution nearestNeighborRandomized(bool exportar = false, int rcl_size = 3); // O(N^2)
-        Solution GRASP(bool exportar = false);
+        Solution nearestNeighborRandomized(int i_random, bool exportar = false, int rcl_size = 3); // O(N^2)
+        Solution GRASP(int numero_iteraciones, string operador_local, int criterio_local, int rcl_size = 3);
 };
 
 #endif // HEURISTICAS_H

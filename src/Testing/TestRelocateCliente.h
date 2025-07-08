@@ -25,19 +25,19 @@ class TestRelocateCliente {
         TestRelocateCliente();
 
         // Tests principales
-        void testRelocateEntreRutas();           // CASO 1: Relocate entre rutas diferentes
-        void testRelocateMismaRuta();            // CASO 2: Relocate en la misma ruta
-        void testRelocateConsecutivos();         // CASO 3: Relocate en posiciones consecutivas
+        bool testRelocateEntreRutas();           // CASO 1: Relocate entre rutas diferentes
+        bool testRelocateMismaRuta();            // CASO 2: Relocate en la misma ruta
+        bool testRelocateConsecutivos();         // CASO 3: Relocate en posiciones consecutivas
         
         // Tests de casos bordes
-        void testRelocateAlInicio();             // CASO 4: Relocate al inicio de la ruta
-        void testRelocateAlFinal();              // CASO 5: Relocate al final de la ruta
-        void testRelocateRutaUnCliente();        // CASO 6: Ruta con un solo cliente
+        bool testRelocateAlInicio();             // CASO 4: Relocate al inicio de la ruta
+        bool testRelocateAlFinal();              // CASO 5: Relocate al final de la ruta
+        bool testRelocateRutaUnCliente();        // CASO 6: Ruta con un solo cliente
         
         // Tests de casos extremos
-        void testRelocateExtremosMismaRuta();    // CASO 7: Relocate desde extremo a extremo
-        void testRelocateExtremosEntreRutas();   // CASO 8: Relocate extremos entre rutas
-        void testRelocatePosicionesInversas();   // CASO 9: Relocate en posiciones inversas
+        bool testRelocateExtremosMismaRuta();    // CASO 7: Relocate desde extremo a extremo
+        bool testRelocateExtremosEntreRutas();   // CASO 8: Relocate extremos entre rutas
+        bool testRelocatePosicionesInversas();   // CASO 9: Relocate en posiciones inversas
 
         void ejecutarTodosLosTests();
     };
