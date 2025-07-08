@@ -155,4 +155,9 @@ void Heuristicas::swap(Solution& solucion, int criterio, bool exportar) {
             }
         }
     }
-}
+} // Complejidad total del operador Relocate: O(N * K * M) ≈ O(N^2)
+// Justificación: para cada uno de los N clientes se evalúan posibles reubicaciones en K rutas,
+// con hasta M posiciones de inserción por ruta (M acotado por N).
+// En cada evaluación se realiza una operación en tiempo constante (chequearMejoraRelocate → O(1)).
+// Por lo tanto, el tiempo total está dominado por el recorrido del vecindario completo, resultando en O(N^2),
+// lo cual es coherente con la implementación observada.

@@ -50,83 +50,81 @@ Solution Heuristicas::nearestNeighborRandomized(int i_random, bool exportar, int
     int k = this->_instancia.getNumVehicles(); // O(1)
 
     vector<int> clientes_depot_ordenados = ordenarPorDistancias(distancias[depot]); // O(N*logN)
+    // Ordena los clientes según su distancia al depósito para formar la RCL inicial.
 
-    // INicializar generador de números aleatorios
     mt19937 gen;
-    gen.seed(time(nullptr) + i_random); // Usar tiempo actual
+    gen.seed(time(nullptr) + i_random); // O(1)
+    // Inicializa el generador de números aleatorios con una semilla distinta por iteración.
 
-    // para saber cuándo todos los clientes tienen una ruta
-    int clientes_no_visitados = n - 1; // O(1) sin contar el deposito
-    vector<int> visitados (n + 1, 0); // O(N) cada i del vector es el cliente i
-    visitados[depot] = 1; // O(1) no queremos considerar el depot, solo clientes
+    int clientes_no_visitados = n - 1; // O(1)
+    vector<int> visitados (n + 1, 0); // O(N)
+    visitados[depot] = 1; // O(1)
+    // Inicializa los vectores auxiliares.
 
     int numero_iteracion = 1;
-    Solution solucion = Solution(k, "NearestNeighborRandomized", this->_nombreInstancia);
+    Solution solucion = Solution(k, "NearestNeighborRandomized", this->_nombreInstancia); // O(1)
 
     if (exportar) {
-        solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+        solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++); // O(N)
     }
 
-    while (clientes_no_visitados > 0) {
-        // Seleccionar primer cliente de la ruta usando RCL
+    while (clientes_no_visitados > 0) { // Máximo N veces
         vector<int> rcl_inicial;
 
         for (int i = 1; i <= static_cast<int>(n); i++) { // O(N)
-            int cliente_sin_ruta;
-
-            if (visitados[clientes_depot_ordenados[i]] == 0) { // O(1)
-                cliente_sin_ruta = clientes_depot_ordenados[i]; // O(1)
-                rcl_inicial.push_back(cliente_sin_ruta);
-
-                if (static_cast<int>(rcl_inicial.size()) == rcl_size) {
-                    break; // si encontré los primeros rcl_size candidatos salgo del ciclo
-                }
+            if (visitados[clientes_depot_ordenados[i]] == 0) {
+                rcl_inicial.push_back(clientes_depot_ordenados[i]); // O(1)
+                if (static_cast<int>(rcl_inicial.size()) == rcl_size) break; // O(1)
             }
         }
 
-        // Recordar que puedo tener menos que rcl_size candidatos, pero ese valor es la cota maxima
+        uniform_int_distribution<int> dist_inicial(0, rcl_inicial.size() - 1); // O(1)
+        int indice_elegido = dist_inicial(gen); // O(1)
+        int primer_cliente_sin_ruta = rcl_inicial[indice_elegido]; // O(1)
+        visitados[primer_cliente_sin_ruta] = 1; // O(1)
+        clientes_no_visitados--; // O(1)
 
-        // Seleccionar aleatoriamente del RCL inicial
-        uniform_int_distribution<int> dist_inicial(0, rcl_inicial.size() - 1);
-        int indice_elegido = dist_inicial(gen);
-        int primer_cliente_sin_ruta = rcl_inicial[indice_elegido];
-        visitados[primer_cliente_sin_ruta] = 1;
-        clientes_no_visitados--;
-        
-        Route* rutaActual = new Route(capacidad, depot); // O(1) creamos la ruta nueva
+        Route* rutaActual = new Route(capacidad, depot); // O(1)
         rutaActual->agregarClienteInicio(primer_cliente_sin_ruta, demandas[primer_cliente_sin_ruta],
-            distancias[depot][primer_cliente_sin_ruta]); // O(1) agregamos el cliente encontrado
+            distancias[depot][primer_cliente_sin_ruta]); // O(1)
 
         int actual = primer_cliente_sin_ruta; // O(1)
-        bool puedeAgregar = true; // O(1) me dice si encuentra clientes que se pueden agregar a la ruta
+        bool puedeAgregar = true;
 
-        while (puedeAgregar != false) { // O(1)
+        while (puedeAgregar != false) {
+            // Selección aleatoria del siguiente cliente a partir de la RCL
             int candidato = clienteAleatorioRCL(distancias[actual], actual, visitados, demandas, 
-                rutaActual->getCapacidadRestante(), rcl_size, gen);
+                rutaActual->getCapacidadRestante(), rcl_size, gen); // O(N) promedio
 
-            if (candidato != -1) { // O(1)
-                // Agregar el candidato a la ruta
-                rutaActual->agregarClienteFinal(candidato, demandas[candidato], distancias[actual][depot], distancias[actual][candidato], 
-                    distancias[candidato][depot]); // O(1)
-                
-                visitados[candidato] = 1; // O(1) ya visité entonces el candidato
-                actual = candidato; // O(1) ahora busco el minimo cliente desde el candidato (candidato del candidato)
+            if (candidato != -1) {
+                rutaActual->agregarClienteFinal(candidato, demandas[candidato],
+                    distancias[actual][depot], distancias[actual][candidato], distancias[candidato][depot]); // O(1)
+
+                visitados[candidato] = 1; // O(1)
+                actual = candidato; // O(1)
                 clientes_no_visitados--; // O(1)
 
                 if (exportar) {
                     Solution parcial = solucion;
-                    parcial.agregarRuta(rutaActual);
-                    parcial.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+                    parcial.agregarRuta(rutaActual); // O(1)
+                    parcial.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++); // O(N)
                 }
 
-            } else puedeAgregar = false; // O(1) si no encontré ningun candidato, la ruta esta hecha
-            
+            } else {
+                puedeAgregar = false; // No hay más clientes factibles para esta ruta
+            }
         }
-        solucion.agregarRuta(rutaActual); // O(1) agrego ruta a la solucion
+
+        solucion.agregarRuta(rutaActual); // O(1)
 
         if (exportar) {
-            solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++);
+            solucion.exportarSolutionParcial(this->_instancia.getNodes(), numero_iteracion++); // O(N)
         }
     }
+
     return solucion;
 }
+
+// Complejidad total del algoritmo: O(N^2)
+// Justificación: Cada cliente es agregado una sola vez, y en cada inserción se evalúan O(N) candidatos.
+// Además, la construcción de rutas implica N selecciones con un costo promedio de O(N) cada una.
