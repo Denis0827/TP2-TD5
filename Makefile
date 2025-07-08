@@ -18,8 +18,8 @@ HEADERS = src/Heuristicas/Heuristicas.h \
 	      src/Modelado_Clase/NodeRoute.h \
           src/Modelado_Clase/Solution.h
 
-main: src/Heuristicas/testing.cpp $(SRC) $(HEADERS)
-	$(CXX) $(CXXFLAGS) -o main src/Heuristicas/testing.cpp src/Heuristicas/ClarkeWright.cpp src/Heuristicas/NearestNeighbor.cpp src/Heuristicas/NearestNeighborRandomized.cpp src/Heuristicas/GRASP.cpp src/Heuristicas/Swap.cpp src/Heuristicas/Relocate.cpp src/Modelado_Clase/VRPLIBReader.cpp src/Modelado_Clase/Solution.cpp src/Modelado_Clase/Route.cpp
+main: src/main.cpp $(SRC) $(HEADERS)
+	$(CXX) $(CXXFLAGS) -o main src/main.cpp src/Heuristicas/ClarkeWright.cpp src/Heuristicas/NearestNeighbor.cpp src/Heuristicas/NearestNeighborRandomized.cpp src/Heuristicas/GRASP.cpp src/Heuristicas/Swap.cpp src/Heuristicas/Relocate.cpp src/Modelado_Clase/VRPLIBReader.cpp src/Modelado_Clase/Solution.cpp src/Modelado_Clase/Route.cpp
 
 experimento: src/Experimentacion/experimento.cpp $(SRC) $(HEADERS)
 	$(CXX) $(CXXFLAGS) -o experimento src/Experimentacion/experimento.cpp src/Heuristicas/ClarkeWright.cpp src/Heuristicas/NearestNeighbor.cpp src/Heuristicas/NearestNeighborRandomized.cpp src/Heuristicas/GRASP.cpp src/Heuristicas/Swap.cpp src/Heuristicas/Relocate.cpp src/Modelado_Clase/VRPLIBReader.cpp src/Modelado_Clase/Solution.cpp src/Modelado_Clase/Route.cpp
