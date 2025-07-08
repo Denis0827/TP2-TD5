@@ -52,6 +52,9 @@ class Heuristicas {
         void swap(Solution& solucion, int criterio, bool exportar = false); 
         // criterio: 0 -> First Improvement, 1 -> Best Improvement
 
+        Solution greedyWithLocalSearch(const string& algoritmo_greedy, const vector<string>& operadores_local, 
+            int criterio, bool exportar = false);
+
         // Método GRASP para Nearest Neighbor
         Solution nearestNeighborRandomized(int i_random, bool exportar = false, int rcl_size = 3); // O(N^2)
         Solution GRASP(int numero_iteraciones, string operador_local, int criterio_local, int rcl_size = 3);

@@ -16,8 +16,8 @@ void ejecutar_algoritmos(const string& instancia, const vector<string>& algoritm
     // Nombre del archivo CSV
     string csv_path = "src/Experimentacion/csv_exportados/" + nombre + ".csv";
     ofstream csv(csv_path);
-    csv << "Algoritmo,Tiempo_us,Distancia\n";
-    csv << "Optimo" << "," << 0 << "," << distancia_optima << "\n";
+    csv << "Algoritmo,Tiempo_us,Distancia,Factibilidad\n";
+    csv << "Optimo" << "," << 0 << "," << distancia_optima << "," << 1 << "\n";
 
     cout << "Instancia: " << nombre << endl;
     cout << "Costo óptimo dado: " << distancia_optima << endl;
@@ -38,6 +38,7 @@ void ejecutar_algoritmos(const string& instancia, const vector<string>& algoritm
             heuristicas.swap(solucion, 1, false);
         } else if (algoritmo == "NN+SW_First") {
             solucion = heuristicas.nearestNeighbor();
+            solucion = heuristicas.greedyWithLocalSearch("NearestNeighbor", {}, int criterio, bool exportar)
             heuristicas.swap(solucion, 0, false);
         } else if (algoritmo == "NN+SW_Best") {
             solucion = heuristicas.nearestNeighbor();
@@ -60,11 +61,13 @@ void ejecutar_algoritmos(const string& instancia, const vector<string>& algoritm
         auto end = high_resolution_clock::now();
         auto duracion_us = duration_cast<microseconds>(end - start).count();
         double distancia = solucion.getDistanciaTotal();
+        int factible = solucion.esFactible() ? 1 : 0;
         cout << "Algoritmo: " << algoritmo << endl;
         cout << "Tiempo de ejecución: " << duracion_us << endl;
         cout << "Distancia total: " << distancia << endl;
+        cout << "Factibilidad: " << factible << endl;
         cout << "--------------" << endl;
-        csv << algoritmo << "," << duracion_us << "," << distancia << "\n";
+        csv << algoritmo << "," << duracion_us << "," << distancia << "," << factible << "\n";
     }
     csv.close();
     cout << "Resultados exportados a: " << csv_path << endl;
