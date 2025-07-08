@@ -4,6 +4,9 @@ import os
 
 # Obtener la ruta de la carpeta csv_exportados relativa al script
 carpeta = os.path.join(os.path.dirname(__file__), 'csv_exportados')
+# Carpeta de salida para los gráficos
+output_dir = os.path.join(os.path.dirname(__file__), 'graficos')
+os.makedirs(output_dir, exist_ok=True)
 
 def graficar_algoritmos(algoritmos, tipo='costo'):
     """
@@ -12,8 +15,8 @@ def graficar_algoritmos(algoritmos, tipo='costo'):
     pero la línea se mantiene continua para todo el algoritmo.
     """
 
-    # Usar la variable global carpeta definida arriba
     global carpeta
+    global output_dir
 
     # Colores asignados por algoritmo (sin rojo)
     colores_disponibles = [
@@ -63,11 +66,17 @@ def graficar_algoritmos(algoritmos, tipo='costo'):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
+
+    # Guardar el gráfico en la carpeta 'graficos'
+    algs_str = '_'.join([alg.replace('+', '').replace(' ', '') for alg in algoritmos])
+    filename = f"{algs_str}_{tipo}.png"
+    filepath = os.path.join(output_dir, filename)
+    plt.savefig(filepath)
+    plt.close()
 
 def graficar_lote():
-    # Usar la variable global carpeta definida arriba
     global carpeta
+    global output_dir
     
     graficos = [
         {
