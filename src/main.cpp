@@ -73,10 +73,10 @@ int main() {
     resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E045-04f.dat", false, "firstImprovement");
     resolverCVRP("NearestNeighbor + Swap", "instancias/2l-cvrp-0/E045-04f.dat", false, "bestImprovement");
 
-    resolverCVRP("ClarkeWright + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "firstImprovement");
-    resolverCVRP("ClarkeWright + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "bestImprovement");
-    resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "firstImprovement");
-    resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "bestImprovement");
+    resolverCVRP("ClarkeWright + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", false, "firstImprovement");
+    resolverCVRP("ClarkeWright + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", false, "bestImprovement");
+    resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", false, "firstImprovement");
+    resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", false, "bestImprovement");
 
     resolverCVRP("GRASP", "instancias/2l-cvrp-0/E045-04f.dat", false, "bestImprovement", 3, "Relocate", 1000);
     return 0;
