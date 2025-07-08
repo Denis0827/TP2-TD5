@@ -34,24 +34,21 @@ void ejecutar_algoritmos(const string& instancia, const vector<string>& algoritm
         } else if (algoritmo == "NN") {
             solucion = heuristicas.nearestNeighbor(false);
         } else if (algoritmo == "CW+SW_Best") {
-            solucion = heuristicas.clarkeWright();
-            heuristicas.swap(solucion, 1, false);
+            solucion = heuristicas.greedyWithLocalSearch("ClarkeWright", {"Swap"}, 1, false);
         } else if (algoritmo == "NN+SW_First") {
-            solucion = heuristicas.nearestNeighbor();
-            solucion = heuristicas.greedyWithLocalSearch("NearestNeighbor", {}, int criterio, bool exportar)
-            heuristicas.swap(solucion, 0, false);
+            solucion = heuristicas.greedyWithLocalSearch("NearestNeighbor", {"Swap"}, 0, false);
         } else if (algoritmo == "NN+SW_Best") {
-            solucion = heuristicas.nearestNeighbor();
-            heuristicas.swap(solucion, 1, false);
+            solucion = heuristicas.greedyWithLocalSearch("NearestNeighbor", {"Swap"}, 1, false);
         } else if (algoritmo == "CW+RL_Best") {
-            solucion = heuristicas.clarkeWright();
-            heuristicas.relocate(solucion, 1, false);
+            solucion = heuristicas.greedyWithLocalSearch("ClarkeWright", {"Relocate"}, 1, false);
         } else if (algoritmo == "NN+RL_First") {
-            solucion = heuristicas.nearestNeighbor();
-            heuristicas.relocate(solucion, 0, false);
+            solucion = heuristicas.greedyWithLocalSearch("NearestNeighbor", {"Relocate"}, 0, false);
         } else if (algoritmo == "NN+RL_Best") {
-            solucion = heuristicas.nearestNeighbor();
-            heuristicas.relocate(solucion, 1, false);
+            solucion = heuristicas.greedyWithLocalSearch("NearestNeighbor", {"Relocate"}, 1, false);
+        } else if (algoritmo == "NN+SW_Best+RL_Best") {
+            solucion = heuristicas.greedyWithLocalSearch("NearestNeighbor", {"Swap", "Relocate"}, 1, false);
+        } else if (algoritmo == "NN+RL_Best+SW_Best") {
+            solucion = heuristicas.greedyWithLocalSearch("NearestNeighbor", {"Relocate", "Swap"}, 1, false);
         } else if (algoritmo == "GRASP+SW_Best") {
             solucion = heuristicas.GRASP(1000, "Swap", 1, 3);
         } else if (algoritmo == "GRASP+RL_Best") {
@@ -90,7 +87,7 @@ int main() {
     vector<double> distancias_optimas_dadas = {723.541, 524.611, 241.973, 742.582, 826.136, 1042.115, 1163.599, 1031.073, 1311.348};
 
     vector<string> algoritmos = {"CW", "NN", "CW+SW_Best", "NN+SW_First", "NN+SW_Best", "CW+RL_Best", 
-        "NN+RL_First", "NN+RL_Best", "GRASP+SW_Best", "GRASP+RL_Best"};
+        "NN+RL_First", "NN+RL_Best", "NN+SW_Best+RL_Best", "NN+RL_Best+SW_Best", "GRASP+SW_Best", "GRASP+RL_Best"};
 
     for (int i = 0; i < static_cast<int>(instancias.size()); i++) {
         ejecutar_algoritmos(instancias[i], algoritmos, distancias_optimas_dadas[i]);

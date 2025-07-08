@@ -22,7 +22,7 @@ main: src/main.cpp $(SRC) $(HEADERS)
 	$(CXX) $(CXXFLAGS) -o main src/main.cpp src/Heuristicas/ClarkeWright.cpp src/Heuristicas/NearestNeighbor.cpp src/Heuristicas/NearestNeighborRandomized.cpp src/Heuristicas/GRASP.cpp src/Heuristicas/Swap.cpp src/Heuristicas/Relocate.cpp src/Modelado_Clase/VRPLIBReader.cpp src/Modelado_Clase/Solution.cpp src/Modelado_Clase/Route.cpp
 
 experimento: src/Experimentacion/experimento.cpp $(SRC) $(HEADERS)
-	$(CXX) $(CXXFLAGS) -o experimento src/Experimentacion/experimento.cpp src/Heuristicas/ClarkeWright.cpp src/Heuristicas/NearestNeighbor.cpp src/Heuristicas/NearestNeighborRandomized.cpp src/Heuristicas/GRASP.cpp src/Heuristicas/Swap.cpp src/Heuristicas/Relocate.cpp src/Modelado_Clase/VRPLIBReader.cpp src/Modelado_Clase/Solution.cpp src/Modelado_Clase/Route.cpp
+	$(CXX) $(CXXFLAGS) -o experimento src/Experimentacion/experimento.cpp src/Heuristicas/ClarkeWright.cpp src/Heuristicas/NearestNeighbor.cpp src/Heuristicas/Swap.cpp src/Heuristicas/Relocate.cpp src/Heuristicas/NearestNeighborRandomized.cpp src/Heuristicas/GRASP.cpp src/Heuristicas/GreedyWithLocalSearch.cpp src/Modelado_Clase/VRPLIBReader.cpp src/Modelado_Clase/Solution.cpp src/Modelado_Clase/Route.cpp
 
 test_route: src/Testing/TestRoute.cpp src/Testing/TestRoute.h $(SRC) $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o test_route src/Testing/TestRoute.cpp src/Modelado_Clase/Route.cpp
