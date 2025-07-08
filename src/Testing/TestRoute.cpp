@@ -1,11 +1,4 @@
 #include "TestRoute.h"
-#include <iostream>
-#include <cassert>
-#include <cmath>
-#include <vector>
-#include <set>
-#include <algorithm>
-using namespace std;
 
 TestRoute::TestRoute() {
     inicializarDistancias();

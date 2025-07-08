@@ -4,6 +4,12 @@
 #include "../Modelado_Clase/Route.h"
 #include <vector>
 #include <string>
+#include <iostream>
+#include <cassert>
+#include <cmath>
+#include <set>
+#include <algorithm>
+using namespace std;
 
 class TestRoute {
     private:

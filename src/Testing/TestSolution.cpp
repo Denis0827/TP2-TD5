@@ -1,7 +1,4 @@
 #include "TestSolution.h"
-#include <iostream>
-#include <cassert>
-using namespace std;
 
 TestSolution::TestSolution() {
     inicializarDistancias();
