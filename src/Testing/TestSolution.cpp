@@ -38,9 +38,18 @@ bool TestSolution::testAgregarRutaYGetters() {
     sol.agregarRuta(r1);
     sol.agregarRuta(r2);
     sol.imprimirSolution();
-    bool ok = (sol.getCantidadRutas() == 2 && sol.getCantidadCamiones() == 3 && sol.getAlgoritmo() == "TestAlgoritmo");
+    // Chequeo de capacidad en cada ruta
+    bool ok = true;
+    for (auto& t : sol.getRutas()) {
+        Route* r = (t);
+        if (r->getDemandaTotal() > r->getCapacidadTotal()) {
+            cout << "[FALLO] Demanda de ruta supera capacidad: " << r->getDemandaTotal() << "/" << r->getCapacidadTotal() << endl;
+            ok = false;
+        }
+    }
+    ok = ok && (sol.getCantidadRutas() == 2 && sol.getCantidadCamiones() == 3 && sol.getAlgoritmo() == "TestAlgoritmo");
     auto rutas = sol.getRutas();
-    ok = ok && (get<1>(rutas[0]) == r1 && get<1>(rutas[1]) == r2);
+    ok = ok && ((rutas[0]) == r1 && rutas[1] == r2);
     cout << (ok ? "OK" : "FALLO") << endl;
     return ok;
 }
@@ -157,6 +166,32 @@ bool TestSolution::testRutasSinClientes() {
     return ok;
 }
 
+bool TestSolution::testEliminarRutasVacias() {
+    cout << "\n-------- TEST 10: eliminarRutasVacias --------" << endl;
+    Solution sol(3, "Alg", "Inst");
+    vector<int> demandas = {0, 10, 20};
+    Route* r1 = crearRuta({1,2}, demandas, 100, distancias);
+    Route* r2 = crearRuta({3}, demandas, 100, distancias);
+    sol.agregarRuta(r1);
+    sol.agregarRuta(r2);
+    sol.imprimirSolution();
+    // Borro todos los clientes de r2 manualmente
+    NodeRoute* actual = r2->getRaizModify()->siguiente;
+    while (actual != r2->getUltimo()) {
+        actual = actual->siguiente;
+        // Simula borrado: solo deja los depots
+        r2->getRaizModify()->siguiente = r2->getUltimoModify();
+        r2->getUltimoModify()->anterior = r2->getRaizModify();
+        break; // Solo un cliente
+    }
+    sol.eliminarRutasVacias();
+    cout << "\nSolution después de borrar la ruta 2" << endl;
+    sol.imprimirSolution();
+    bool ok = (sol.getCantidadRutas() == 1);
+    cout << (ok ? "OK" : "FALLO") << endl;
+    return ok;
+}
+
 void TestSolution::ejecutarTodosLosTests() {
     cout << "====================================" << endl;
     cout << "TESTING EXHAUSTIVO DE SOLUTION" << endl;
@@ -176,6 +211,7 @@ void TestSolution::ejecutarTodosLosTests() {
     runTest(&TestSolution::testUnicaRutaUnCliente);
     runTest(&TestSolution::testRutasConClientesRepetidos);
     runTest(&TestSolution::testRutasSinClientes);
+    runTest(&TestSolution::testEliminarRutasVacias);
     cout << "\n==============================================================" << endl;
     cout << "✓ TODOS LOS TESTS DE SOLUTION PASARON (" << okCount << " OK, " << failCount << " FALLO)" << endl;
     cout << "==============================================================" << endl;

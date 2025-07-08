@@ -25,7 +25,7 @@ bool Solution::esFactible() const {
 vector<tuple<NodeRoute*, Route*>> Solution::getAllClientesSol() const {
     vector<tuple<NodeRoute*, Route*>> clientes;
     for (int i = 0; i < this->_cantidad_rutas; i++) {
-        Route* ruta = get<1>(this->_rutas[i]);
+        Route* ruta = this->_rutas[i];
         // Recorremos los clientes de la ruta (excluyendo el depósito)
         NodeRoute* actual = ruta->getRaizModify()->siguiente;
         while (actual != ruta->getUltimo()) {
@@ -39,7 +39,7 @@ vector<tuple<NodeRoute*, Route*>> Solution::getAllClientesSol() const {
 double Solution::getDistanciaTotal() const {
     double distancia = 0.0;
     for (int i = 0; i < this->_cantidad_rutas; i++) {
-        Route* ruta = get<1>(this->_rutas[i]);
+        Route* ruta = this->_rutas[i];
         distancia += ruta->getDistanciaTotal();
     }
     return distancia;
@@ -50,10 +50,25 @@ void Solution::setAlgoritmo(string algoritmo) {
 }
 
 void Solution::agregarRuta(Route* ruta) {
-    this->_rutas.push_back(make_tuple(this->_ultimo_id + 1, ruta));
+    this->_rutas.push_back(ruta);
     this->_cantidad_rutas++;
     this->_ultimo_id++;
 } 
+
+void Solution::eliminarRutasVacias() {
+    vector<Route*> nuevasRutas;
+
+    for (int i = 0; i < this->_cantidad_rutas; i++) {
+        Route* ruta = this->_rutas[i];
+
+        if (ruta->getAllClientes().size() > 0) {
+            nuevasRutas.push_back(ruta);
+        }
+    }
+    
+    this->_rutas = nuevasRutas;
+    this->_cantidad_rutas = this->_rutas.size();
+}
 
 void Solution::imprimirSolution() {
     if (!this->esFactible()) {
@@ -65,7 +80,7 @@ void Solution::imprimirSolution() {
 
     for (int i = 0; i < static_cast<int>(this->_rutas.size()); i++) {
         cout << "Ruta " << id++ << ": ";
-        Route* ruta = get<1>(this->_rutas[i]);
+        Route* ruta = this->_rutas[i];
         ruta->imprimirRuta();
         distanciaTotalGlobal += ruta->getDistanciaTotal();
     }
@@ -107,7 +122,7 @@ void Solution::exportarSolutionParcial(const vector<Node>& nodos, int numero_ite
 
     double distanciaTotalGlobal = 0.0;
     for (int i = 0; i < this->_cantidad_rutas; i++) {
-        distanciaTotalGlobal += get<1>(this->_rutas[i])->getDistanciaTotal();
+        distanciaTotalGlobal += this->_rutas[i]->getDistanciaTotal();
     }
 
     out << "# Instancia: " << this->_instanciaCVRP << std::endl;
@@ -121,7 +136,7 @@ void Solution::exportarSolutionParcial(const vector<Node>& nodos, int numero_ite
 
     // Luego, exporta las aristas de las rutas
     for (const auto& ruta_tuple : this->_rutas) {
-        Route* ruta = get<1>(ruta_tuple);
+        Route* ruta = ruta_tuple;
         const NodeRoute* actual = ruta->getRaiz();
         while (actual && actual->siguiente) {
             const Node& from = nodos[actual->id - 1];
@@ -135,7 +150,7 @@ void Solution::exportarSolutionParcial(const vector<Node>& nodos, int numero_ite
 
 // --- Getter Implementations ---
 
-vector<tuple<int, Route*>> Solution::getRutas() const { return this->_rutas; } // O(1)
+vector<Route*> Solution::getRutas() const { return this->_rutas; } // O(1)
 int Solution::getCantidadRutas() const { return this->_cantidad_rutas; } // O(1)
 int Solution::getCantidadCamiones() const { return this->_cantidad_camiones; } // O(1)
 string Solution::getAlgoritmo() const { return this->_algoritmo; } // O(1)

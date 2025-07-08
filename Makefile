@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g -std=c++17 -Wall -Wextra -O2 -I./src/Modelado_Clase -I./src/Heuristicas -I./src/Testing
+CXXFLAGS = -g -std=c++11 -Wall -Wextra -O2 -I./src/Modelado_Clase -I./src/Heuristicas -I./src/Testing
 
 SRC = src/Heuristicas/ClarkeWright.cpp \
       src/Heuristicas/NearestNeighbor.cpp \
@@ -33,10 +33,6 @@ test_relocate_cliente: src/Testing/TestRelocateCliente.cpp src/Testing/TestReloc
 test_solution: src/Testing/TestSolution.cpp src/Testing/TestSolution.h $(SRC) $(HEADERS)
 	$(CXX) $(CXXFLAGS) -o test_solution src/Testing/TestSolution.cpp src/Modelado_Clase/Solution.cpp src/Modelado_Clase/Route.cpp
 
-test_heuristicas: src/Testing/TestHeuristicas.cpp src/Testing/TestHeuristicas.h $(SRC) $(HEADERS)
-	$(CXX) $(CXXFLAGS) -o test_heuristicas src/Testing/TestHeuristicas.cpp src/Heuristicas/ClarkeWright.cpp src/Heuristicas/NearestNeighbor.cpp src/Heuristicas/NearestNeighborRandomized.cpp src/Heuristicas/GRASP.cpp src/Heuristicas/Swap.cpp src/Heuristicas/Relocate.cpp src/Modelado_Clase/VRPLIBReader.cpp src/Modelado_Clase/Solution.cpp src/Modelado_Clase/Route.cpp
-
-
 # -- Ejecutar test específico (compila y ejecuta en un solo paso) --
 run_main:
 	$(MAKE) main && ./main
@@ -53,9 +49,6 @@ run_test_relocate_cliente:
 run_test_solution:
 	$(MAKE) test_solution && ./test_solution
 
-run_test_heuristicas:
-	$(MAKE) test_heuristicas && ./test_heuristicas
-
 # -- Limpieza --
 clean:
-	rm -f main test_route test_swap_clientes test_relocate_cliente test_heuristicas test_solution
+	rm -f main test_route test_swap_clientes test_relocate_cliente test_solution

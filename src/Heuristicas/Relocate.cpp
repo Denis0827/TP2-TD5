@@ -32,7 +32,7 @@ double Heuristicas::chequearMejoraRelocate(Route& rutaA, Route& rutaB, NodeRoute
 void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix();
     const vector<int>& demandas = this->_instancia.getDemands();
-    const vector<tuple<int, Route*>>& rutas = solucion.getRutas();
+    const vector<Route*>& rutas = solucion.getRutas();
     const vector<tuple<NodeRoute*, Route*>>& clientes_a_visitar = solucion.getAllClientesSol();
 
     string algoritmo_goloso = solucion.getAlgoritmo();
@@ -57,7 +57,7 @@ void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
         double best_mejora = 0.0;
 
         for (int j = 0; j < static_cast<int>(rutas.size()); j++) {
-            Route* rutaB = get<1>(rutas[j]);
+            Route* rutaB = rutas[j];
             NodeRoute* destinoPrev = rutaB->getRaizModify(); // cliente_j
 
             // el cliente_j debe tener tener al menos un siguiente que luego lo elegimos como cliente_k
@@ -102,4 +102,6 @@ void Heuristicas::relocate(Solution& solucion, int criterio, bool exportar) {
             }
         }
     }
+
+    solucion.eliminarRutasVacias();
 }

@@ -26,6 +26,7 @@ class TestSolution {
         bool testUnicaRutaUnCliente();
         bool testRutasConClientesRepetidos();
         bool testRutasSinClientes();
+        bool testEliminarRutasVacias();
         void ejecutarTodosLosTests();
 };
 

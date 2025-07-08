@@ -65,7 +65,7 @@ void resolverCVRP(string algoritmo, string instancia, bool exportar = false, str
 }
 
 int main() {
-    resolverCVRP("ClarkeWright", "instancias/2l-cvrp-0/E200-17c.dat", false);
+    resolverCVRP("ClarkeWright", "instancias/2l-cvrp-0/E045-04f.dat", false);
     resolverCVRP("NearestNeighborRandomized", "instancias/2l-cvrp-0/E045-04f.dat", false);
 
     /*
@@ -82,6 +82,6 @@ int main() {
     resolverCVRP("NearestNeighbor + Relocate", "instancias/2l-cvrp-0/E101D11r.dat", true, "bestImprovement");
     */
 
-    resolverCVRP("GRASP", "instancias/2l-cvrp-0/E200-17c.dat", false, "bestImprovement", 3, "Relocate", 1000);
+    resolverCVRP("GRASP", "instancias/2l-cvrp-0/E045-04f.dat", false, "bestImprovement", 3, "Relocate", 1000);
     return 0;
 }

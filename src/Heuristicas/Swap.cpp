@@ -78,7 +78,7 @@ double Heuristicas::chequearMejoraSwap(Route& ruta_A, Route& ruta_B, NodeRoute* 
 
 void Heuristicas::swap(Solution& solucion, int criterio, bool exportar) {
     const vector<vector<double>>& distancias = this->_instancia.getDistanceMatrix(); // O(1)
-    const vector<tuple<int, Route*>>& rutas = solucion.getRutas(); // O(1)
+    const vector<Route*>& rutas = solucion.getRutas(); // O(1)
     const vector<tuple<NodeRoute*, Route*>>& clientes_a_visitar = solucion.getAllClientesSol(); // O(1)
     
     // Agrega el nombre del operador de mejora aplicado al nombre del algoritmo original
@@ -108,7 +108,7 @@ void Heuristicas::swap(Solution& solucion, int criterio, bool exportar) {
 
         // Recorremos todas las rutas para comparar clientes entre rutas distintas
         for (int j = 0; j < static_cast<int>(rutas.size()); j++) { // O(K)
-            Route* rutaB = get<1>(rutas[j]); // O(1)
+            Route* rutaB = rutas[j]; // O(1)
             NodeRoute* actualB = rutaB->getRaizModify()->siguiente; // O(1)
 
             // Mientras no hayamos hecho un swap válido (solo para FirstImprovement) y no lleguemos al final de la ruta
