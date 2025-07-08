@@ -5,15 +5,15 @@
 #include <vector>
 #include <string>
 
-class TestRouteTester {
+class TestRoute {
     private:
         std::vector<std::vector<double>> distancias;
         void inicializarDistancias();
         void imprimirRuta(const Route& ruta, const std::string& nombre);
-        bool verificarIntegridadRuta(const Route& ruta, int clientesEsperados, int demandaEsperada, int capacidadEsperada, double distanciaEsperada);
+        bool verificarIntegridadRuta(const Route& ruta, int clientesEsperados, int demandaEsperada, int capacidadEsperada, double distanciaEsperada, int rutaNum);
 
     public:
-        TestRouteTester();
+        TestRoute();
         bool testRutaVacia();
         bool testUnCliente();
         bool testVariosClientes();

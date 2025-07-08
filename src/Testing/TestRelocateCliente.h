@@ -19,7 +19,7 @@ class TestRelocateCliente {
 
         // Funciones auxiliares para cálculos y verificaciones
         void inicializarDistancias();
-        void verificarIntegridadRuta(const Route& ruta, int rutaNum);
+        bool verificarIntegridadRuta(const Route& ruta, int rutaNum);
 
     public:
         TestRelocateCliente();

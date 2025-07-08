@@ -79,6 +79,7 @@ bool TestRelocateCliente::verificarIntegridadRuta(const Route& ruta, int rutaNum
     // Depot solo en extremos
     if (ruta.getRaiz()->id != 0) return false;
     if (ruta.getUltimo()->id != 0) return false;
+    cout << "Integridad de ruta " << rutaNum << " verificada correctamente" << endl;
     return true;
 }
 

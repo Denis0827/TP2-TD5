@@ -3,10 +3,10 @@
     "configurations": [
         
         {
-            "name": "Debug",
+            "name": "Debug test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/main",
+            "program": "${workspaceFolder}/test_route",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
