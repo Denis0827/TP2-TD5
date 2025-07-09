@@ -83,119 +83,119 @@ void Route::unirRutas(Route& otraRuta, double dist_ij, double dist_depi, double 
     this->_demandaTotal += otraRuta._demandaTotal; // O(1)
     this->_distanciaTotal += otraRuta._distanciaTotal + dist_ij - dist_depi - dis_depj; // O(1)
 }
-
 void Route::swapClientes(Route& otraRuta, NodeRoute* clienteA, NodeRoute* clienteB, const vector<vector<double>>& distancias) {
-    // Inicialización de variables
     int demandaA = clienteA->demanda; // O(1)
     int demandaB = clienteB->demanda; // O(1)
 
-    // Identifico vecinos de cada cliente para calcular el costo del cambio
     int cliente_anterior_A = clienteA->anterior->id; // O(1)
     int cliente_siguiente_A = clienteA->siguiente->id; // O(1)
     int cliente_anterior_B = clienteB->anterior->id; // O(1)
     int cliente_siguiente_B = clienteB->siguiente->id; // O(1)
-    
-    // Costo antes del swap para A y B
+
     double costo_anterior_A = distancias[cliente_anterior_A][clienteA->id] + distancias[clienteA->id][cliente_siguiente_A]; // O(1)
     double costo_anterior_B = distancias[cliente_anterior_B][clienteB->id] + distancias[clienteB->id][cliente_siguiente_B]; // O(1)
 
-    double costo_nuevo_A, costo_nuevo_B;
-    if (clienteA->siguiente != clienteB && clienteB->siguiente != clienteA) { 
-        // Costo después del swap para A y B (no consecutivos)
+    double costo_nuevo_A, costo_nuevo_B; // O(1)
+
+    if (clienteA->siguiente != clienteB && clienteB->siguiente != clienteA) {
         costo_nuevo_A = distancias[cliente_anterior_B][clienteA->id] + distancias[clienteA->id][cliente_siguiente_B]; // O(1)
         costo_nuevo_B = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][cliente_siguiente_A]; // O(1)
-    } else { // Nodos consecutivos
-        if (clienteB == clienteA->siguiente) { // Caso A->B consecutivos
+    } else {
+        if (clienteB == clienteA->siguiente) {
             costo_nuevo_A = distancias[clienteA->id][clienteB->id] + distancias[clienteA->id][cliente_siguiente_B]; // O(1)
             costo_nuevo_B = distancias[cliente_anterior_A][clienteB->id] + distancias[clienteB->id][clienteA->id]; // O(1)
-        } else { // Caso B->A consecutivos
+        } else {
             costo_nuevo_A = distancias[clienteA->id][clienteB->id] + distancias[clienteA->id][cliente_anterior_B]; // O(1)
             costo_nuevo_B = distancias[cliente_siguiente_A][clienteB->id] + distancias[clienteB->id][clienteA->id]; // O(1)
         }
     }
 
-    NodeRoute* clienteA_anterior = clienteA->anterior;
-    NodeRoute* clienteA_siguiente = clienteA->siguiente;
-    NodeRoute* clienteB_anterior = clienteB->anterior;
-    NodeRoute* clienteB_siguiente = clienteB->siguiente;
+    NodeRoute* clienteA_anterior = clienteA->anterior; // O(1)
+    NodeRoute* clienteA_siguiente = clienteA->siguiente; // O(1)
+    NodeRoute* clienteB_anterior = clienteB->anterior; // O(1)
+    NodeRoute* clienteB_siguiente = clienteB->siguiente; // O(1)
 
-    // Realizamos el swap, teniendo cuidado con los enlaces entre clientes y tomando como guía los ejemplos
-    // ilustrativos mostrados arriba
-    if (clienteA->siguiente != clienteB && clienteB->siguiente != clienteA) { // caso NO consecutivos
-        clienteA->anterior = clienteB->anterior;
-        clienteA->siguiente = clienteB->siguiente;
-        clienteB->anterior = clienteA_anterior;
-        clienteB->siguiente = clienteA_siguiente;
-        
-        clienteA_anterior->siguiente = clienteB;
-        clienteA_siguiente->anterior = clienteB;
-        clienteB_anterior->siguiente = clienteA;
-        clienteB_siguiente->anterior = clienteA;
-    } else { // caso SI consecutivos
+    // Reasignación de punteros (O(1) cada una)
+    if (clienteA->siguiente != clienteB && clienteB->siguiente != clienteA) {
+        clienteA->anterior = clienteB->anterior; // O(1)
+        clienteA->siguiente = clienteB->siguiente; // O(1)
+        clienteB->anterior = clienteA_anterior; // O(1)
+        clienteB->siguiente = clienteA_siguiente; // O(1)
+
+        clienteA_anterior->siguiente = clienteB; // O(1)
+        clienteA_siguiente->anterior = clienteB; // O(1)
+        clienteB_anterior->siguiente = clienteA; // O(1)
+        clienteB_siguiente->anterior = clienteA; // O(1)
+    } else {
         if (clienteA->siguiente == clienteB) {
-            clienteA->anterior = clienteB;
-            clienteA->siguiente = clienteB_siguiente;
-            clienteB->anterior = clienteA_anterior;
-            clienteB->siguiente = clienteA;
+            clienteA->anterior = clienteB; // O(1)
+            clienteA->siguiente = clienteB_siguiente; // O(1)
+            clienteB->anterior = clienteA_anterior; // O(1)
+            clienteB->siguiente = clienteA; // O(1)
 
-            clienteA_anterior->siguiente = clienteB;
-            clienteB_siguiente->anterior = clienteA;
+            clienteA_anterior->siguiente = clienteB; // O(1)
+            clienteB_siguiente->anterior = clienteA; // O(1)
         } else {
-            clienteA->anterior = clienteB_anterior;
-            clienteA->siguiente = clienteB;
-            clienteB->anterior = clienteA;
-            clienteB->siguiente = clienteA_siguiente;
+            clienteA->anterior = clienteB_anterior; // O(1)
+            clienteA->siguiente = clienteB; // O(1)
+            clienteB->anterior = clienteA; // O(1)
+            clienteB->siguiente = clienteA_siguiente; // O(1)
 
-            clienteA_siguiente->anterior = clienteB;
-            clienteB_anterior->siguiente = clienteA;
+            clienteA_siguiente->anterior = clienteB; // O(1)
+            clienteB_anterior->siguiente = clienteA; // O(1)
         }
     }
 
-    this->_demandaTotal += demandaB - demandaA;
-    otraRuta._demandaTotal += demandaA - demandaB;
-    // si fuesen la misma ruta se cancela la suma
+    this->_demandaTotal += demandaB - demandaA; // O(1)
+    otraRuta._demandaTotal += demandaA - demandaB; // O(1)
 
-    bool misma_ruta = this->getRaiz()->siguiente->id == otraRuta.getRaiz()->siguiente->id; // si las rutas no tienen el mismo primer cliente, entonces son distintas rutas
+    bool misma_ruta = this->getRaiz()->siguiente->id == otraRuta.getRaiz()->siguiente->id; // O(1)
 
     if (misma_ruta) {
-        this->_distanciaTotal += (costo_nuevo_A + costo_nuevo_B) - (costo_anterior_A + costo_anterior_B);
+        this->_distanciaTotal += (costo_nuevo_A + costo_nuevo_B) - (costo_anterior_A + costo_anterior_B); // O(1)
     } else {
-        this->_distanciaTotal += costo_nuevo_B - costo_anterior_A;
-        otraRuta._distanciaTotal += costo_nuevo_A - costo_anterior_B;
-    } 
-}
-
-void Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const vector<int>& demandas, const vector<vector<double>>& distancias) {
-    int cliente_i = cliente->id;
-    int cliente_p = cliente->anterior->id;
-    int cliente_q = cliente->siguiente->id;
-    int cliente_j = destinoPrev->id;
-    NodeRoute* destinoNext = destinoPrev->siguiente;
-    int cliente_k = destinoNext->id;
-
-    double costo_actual = distancias[cliente_p][cliente_i] + distancias[cliente_i][cliente_q] + distancias[cliente_j][cliente_k];
-    double costo_nuevo = distancias[cliente_p][cliente_q] + distancias[cliente_j][cliente_i] + distancias[cliente_i][cliente_k];
-
-    // Quitar cliente de su lugar
-    cliente->anterior->siguiente = cliente->siguiente;
-    cliente->siguiente->anterior = cliente->anterior;
-
-    // Insertar cliente en nueva posición
-    cliente->anterior = destinoPrev;
-    cliente->siguiente = destinoNext;
-    destinoPrev->siguiente = cliente;
-    destinoNext->anterior = cliente;
-
-    if (this != &otraRuta) {
-        this->_demandaTotal -= demandas[cliente_i];
-        otraRuta._demandaTotal += demandas[cliente_i];
-        this->_distanciaTotal += distancias[cliente_p][cliente_q] - distancias[cliente_p][cliente_i] - distancias[cliente_i][cliente_q];
-        otraRuta._distanciaTotal += distancias[cliente_j][cliente_i] + distancias[cliente_i][cliente_k] - distancias[cliente_j][cliente_k];
-    } else {
-        this->_distanciaTotal += costo_nuevo - costo_actual;
+        this->_distanciaTotal += costo_nuevo_B - costo_anterior_A; // O(1)
+        otraRuta._distanciaTotal += costo_nuevo_A - costo_anterior_B; // O(1)
     }
 }
 
+// Complejidad total: O(1)
+// Justificación: todas las operaciones son asignaciones, accesos por punteros o cálculos simples de costo,
+// sin bucles ni estructuras dinámicas. La función realiza un intercambio entre dos nodos en tiempo constante.
+void Route::relocateCliente(Route& otraRuta, NodeRoute* cliente, NodeRoute* destinoPrev, const vector<int>& demandas, const vector<vector<double>>& distancias) {
+    int cliente_i = cliente->id; // O(1)
+    int cliente_p = cliente->anterior->id; // O(1)
+    int cliente_q = cliente->siguiente->id; // O(1)
+    int cliente_j = destinoPrev->id; // O(1)
+    NodeRoute* destinoNext = destinoPrev->siguiente; // O(1)
+    int cliente_k = destinoNext->id; // O(1)
+
+    double costo_actual = distancias[cliente_p][cliente_i] + distancias[cliente_i][cliente_q] + distancias[cliente_j][cliente_k]; // O(1)
+    double costo_nuevo = distancias[cliente_p][cliente_q] + distancias[cliente_j][cliente_i] + distancias[cliente_i][cliente_k]; // O(1)
+
+    // Quitar cliente de su lugar actual (ajuste de punteros)
+    cliente->anterior->siguiente = cliente->siguiente; // O(1)
+    cliente->siguiente->anterior = cliente->anterior; // O(1)
+
+    // Insertar cliente en nueva posición (ajuste de punteros)
+    cliente->anterior = destinoPrev; // O(1)
+    cliente->siguiente = destinoNext; // O(1)
+    destinoPrev->siguiente = cliente; // O(1)
+    destinoNext->anterior = cliente; // O(1)
+
+    if (this != &otraRuta) {
+        this->_demandaTotal -= demandas[cliente_i]; // O(1)
+        otraRuta._demandaTotal += demandas[cliente_i]; // O(1)
+        this->_distanciaTotal += distancias[cliente_p][cliente_q] - distancias[cliente_p][cliente_i] - distancias[cliente_i][cliente_q]; // O(1)
+        otraRuta._distanciaTotal += distancias[cliente_j][cliente_i] + distancias[cliente_i][cliente_k] - distancias[cliente_j][cliente_k]; // O(1)
+    } else {
+        this->_distanciaTotal += costo_nuevo - costo_actual; // O(1)
+    }
+}
+
+// Complejidad total: O(1)
+// Justificación: todas las acciones se realizan en tiempo constante: enlaces de punteros,
+// actualización de demanda y cálculo de costo. No se recorren listas ni estructuras complejas.
 void Route::imprimirRuta() const {
     cout << "Ruta: "; // O(1)
     const NodeRoute* actual = this->getRaiz(); // O(1)

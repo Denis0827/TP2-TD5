@@ -56,7 +56,7 @@ def graficar_algoritmos(algoritmos, tipo='costo'):
         df_alg = df_filtrado[df_filtrado['Algoritmo'] == algoritmo]
         color = color_map[algoritmo]
         df_alg = df_alg.sort_values(by='Instancia')
-        plt.plot(df_alg['Instancia'], df_alg[eje_y], '-o', label=algoritmo, color=color)
+        plt.plot(df_alg['Instancia'], df_alg[eje_y], '-', label=algoritmo, color=color)
         df_nofact = df_alg[df_alg['Factibilidad'] == 0]
         plt.scatter(df_nofact['Instancia'], df_nofact[eje_y], color='red', zorder=5)
 
